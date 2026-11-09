@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Oyuncu Envanteri</title>
+<link rel="stylesheet" href="client.css">
+<script src="vendor/supabase.js"></script>
+<style>
+  html, body { margin: 0; background: #0b0705 !important; overflow: hidden; cursor: default; }
+  #kok { position: relative; transform-origin: 50% 0; width: fit-content; margin: 0 auto; }
+  #kok [data-id="btn_close"] { display: none !important; }
+  #kok .web-inv { position: relative !important; left: 0 !important; top: 0 !important; right: auto !important; scale: 1 !important; display: block; }
+  #env-durum { position: fixed; left: 8px; bottom: 6px; font: 11px Verdana, sans-serif; color: #b89a66; text-shadow: 0 1px 2px #000; }
+  #env-durum.hata { color: #ff6a50; }
+  .web-inv-kar { display: flex; align-items: flex-end; justify-content: center; }
+  .web-inv-kart { display: grid; gap: 3px; justify-items: center; padding: 10px 6px 16px; width: 100%; font: 12px Tahoma, Verdana, sans-serif; color: #e8dcc0; text-shadow: 0 1px 2px #000;
+    background: linear-gradient(transparent, rgba(0,0,0,.65) 35%); }
+  .web-inv-kart b { font-size: 14px; } .web-inv-kart .ulus-1 { color: #ff8f7a; } .web-inv-kart .ulus-2 { color: #8fc0ff; }
+  .web-inv-kart .yesil { color: #6cff5a; } .web-inv-kart .gri { color: #9a8f80; }
+</style>
+</head>
+<body>
+<div id="kok"></div>
+<div id="env-durum">Yükleniyor…</div>
+<script type="module">
+import { SUPABASE_URL, SUPABASE_KEY } from './js/config.js';
+import { webEnvanter } from './js/web-envanter.js';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const d = document.getElementById('env-durum'), kok = document.getElementById('kok');
+const durum = (m, h) => { d.textContent = m; d.className = h ? 'hata' : ''; };
+const id = Number(new URLSearchParams(location.search).get('c'));
+// iframe genişliğine sığdır
+const sigdir = (w, h) => { const s = Math.min(1, (innerWidth - 8) / w); kok.style.transform = `scale(${s})`; parent?.postMessage?.({ tur: 'envanter-boy', h: Math.ceil(h * s) + 24 }, location.origin); };
+try {
+  if (!id) throw new Error('karakter seçilmedi');
+  const e = await webEnvanter({ sb, charId: id, kok, durum });
+  const b = e.boyut(); sigdir(b.w, b.h); addEventListener('resize', () => sigdir(b.w, b.h));
+  window.envanterYenile = () => e.yenile();
+} catch (err) { durum('Envanter açılamadı: ' + (err?.message || err), true); }
+</script>
+</body>
+</html>

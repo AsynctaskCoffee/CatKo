@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MineKO Mağaza</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l4 10h10l-8 6 3 11-9-7-9 7 3-11-8-6h10z' fill='%23e8b84a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="client.css">
+<script src="vendor/supabase.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; cursor: default; background: #070504 !important; }
+  body { background: radial-gradient(ellipse at 50% 30%, #2a140a 0%, #0b0705 60%, #050302 100%) !important; }
+  #mg-ust { position: fixed; left: 0; right: 0; top: 0; z-index: 9700; display: flex; align-items: center; gap: 14px; padding: 8px 16px; font: 12px Tahoma, Verdana, sans-serif; color: #e8dcc0;
+    background: linear-gradient(180deg, rgba(20,10,6,.96), rgba(20,10,6,.75)); border-bottom: 1px solid #6b4a24; box-shadow: 0 2px 12px rgba(0,0,0,.6); }
+  #mg-ust a { color: #f3d48a; text-decoration: none; font-weight: bold; } #mg-ust a:hover { color: #fff; }
+  #mg-ust .bosluk { flex: 1; }
+  #mg-ust select { height: 26px; background: #1c120b; color: #f3e2bd; border: 1px solid #8a6a3a; font: 12px Tahoma, sans-serif; padding: 0 6px; }
+  #mg-ust .not { color: #b8a27e; }
+  #pus-pencere .pus-kapat { display: none !important; }
+  #pus-perde { background: transparent !important; }
+  #mg-bilgi { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 9800; display: grid; gap: 6px; justify-items: center; pointer-events: none; }
+  #mg-bilgi div { padding: 8px 16px; font: 13px Tahoma, sans-serif; color: #fff; background: rgba(20,12,8,.94); border: 1px solid #8a6a3a; box-shadow: 0 4px 16px #000; border-radius: 3px; animation: mg-gel .25s ease-out; }
+  #mg-bilgi div.hata { border-color: #c4553a; color: #ffb8a8; } #mg-bilgi div.tamam { border-color: #6aa84f; color: #d8ffcc; }
+  @keyframes mg-gel { from { opacity: 0; transform: translateY(8px); } }
+  #mg-giris { position: fixed; inset: 0; display: grid; place-items: center; font: 14px Tahoma, sans-serif; color: #e8dcc0; text-align: center; }
+  #mg-giris a { color: #f3d48a; font-weight: bold; }
+</style>
+</head>
+<body>
+<div id="mg-ust">
+  <a href="index.html">◀ Siteye dön</a>
+  <span class="bosluk"></span>
+  <span class="not">Satın aldıkların oyundaki <b>posta kutuna</b> gelir (hesabındaki tüm karakterler görür).</span>
+  <label>KC ödeyecek karakter <select id="mg-kar"></select></label>
+</div>
+<div id="mg-bilgi"></div>
+<div id="mg-giris" hidden></div>
+<script type="module">
+import { SUPABASE_URL, SUPABASE_KEY } from './js/config.js';
+import { pusAc } from './js/pus.js';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const bilgi = document.getElementById('mg-bilgi');
+const yaz = (m, t = '') => { const d = document.createElement('div'); d.className = t; d.textContent = m; bilgi.append(d); setTimeout(() => d.remove(), 6000); while (bilgi.children.length > 3) bilgi.firstChild.remove(); };
+const hud = { notice: (m, t) => yaz(m, t === 'hata' ? 'hata' : ''), info: (m) => yaz(m, 'tamam'), banner: (m) => yaz(m) };
+const giris = (html) => { const g = document.getElementById('mg-giris'); g.innerHTML = html; g.hidden = false; };
+const { data: { session } } = await sb.auth.getSession();
+if (!session) giris('<div>Mağazayı kullanmak için önce <a href="index.html#giris">giriş yap</a>.</div>');
+else {
+  const gmMod = new URLSearchParams(location.search).get('gm') === '1' && (await sb.rpc('web_gm_mi')).data === true;
+  const { data: kar } = await sb.rpc('web_hesap_karakterler');
+  const gmId = gmMod ? (await sb.rpc('web_gm_karakter')).data : null;
+  if (!kar?.length) giris('<div>Hesabında karakter yok. Önce <a href="launcher.html">oyuna girip</a> bir karakter oluştur.</div>');
+  else {
+    const sec = document.getElementById('mg-kar');
+    let son = gmId || Number(localStorage.getItem('mg-kar')) || kar[0].id; if (!kar.some((k) => k.id === son)) son = kar[0].id;
+    sec.innerHTML = kar.map((k) => `<option value="${k.id}"${k.id === son ? ' selected' : ''}>${k.ad} (Lv ${k.seviye}) — ${Number(k.cash).toLocaleString('tr-TR')} KC</option>`).join('');
+    const ctx = { sb, hud, state: null, gm: !!gmId, web: true, character: { ...kar.find((k) => k.id === son), name: kar.find((k) => k.id === son).ad } };
+    sec.addEventListener('change', () => {
+      const k = kar.find((x) => x.id === Number(sec.value)); if (!k) return;
+      try { localStorage.setItem('mg-kar', String(k.id)); } catch {}
+      ctx.character = { ...k, name: k.ad }; dispatchEvent(new CustomEvent('ko-cash', { detail: k.cash }));
+    });
+    addEventListener('ko-cash', (e) => {   // bakiye değişince seçim kutusundaki yazı da güncellenir
+      const k = kar.find((x) => x.id === ctx.character.id); if (!k || e.detail == null) return;
+      k.cash = e.detail; const o = sec.querySelector(`option[value="${k.id}"]`); if (o) o.textContent = `${k.ad} (Lv ${k.seviye}) — ${Number(k.cash).toLocaleString('tr-TR')} KC`;
+    });
+    await pusAc(ctx);
+    addEventListener('ko-pus-kapat', () => setTimeout(() => pusAc(ctx), 50));   // sitede mağaza hep açık kalır
+  }
+}
+</script>
+</body>
+</html>

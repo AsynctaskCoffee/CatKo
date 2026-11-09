@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KO Web</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l4 10h10l-8 6 3 11-9-7-9 7 3-11-8-6h10z' fill='%23e8b84a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://vnlevnlsyyqkofnplzdm.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://vnlevnlsyyqkofnplzdm.supabase.co">
+<link rel="stylesheet" href="client.css?v=__SURUM__">
+<script>
+// KO: oyun yükleme ekranındayken F5 → girişe dön (yükleme bitince main.js işareti siler; kodun yaptığı bölge geçişleri "reload" değildir)
+(function () { try {
+  var q = new URLSearchParams(location.search), nav = performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+  var f5 = nav ? nav.type === 'reload' : !!(performance.navigation && performance.navigation.type === 1);
+  if (q.get('karakter') && f5 && sessionStorage.getItem('ko-yukleniyor') === '1') { sessionStorage.removeItem('ko-yukleniyor'); window.__koF5 = true; location.replace('index.html'); return; }
+  if (q.get('karakter')) sessionStorage.setItem('ko-yukleniyor', '1');
+} catch (e) {} })();
+</script>
+<script>
+// Derleme sürümü (build.mjs yazar). assets/ istekleri her açılışta sunucuya doğrulatılır (değişmediyse 304),
+// görsellere ?v=<sürüm> eklenir: yeni yayında eski önbellek asla kullanılmaz.
+window.KO_SURUM = '__SURUM__';
+window.KO_V = function (u) { return window.KO_SURUM && window.KO_SURUM.indexOf('__') < 0 ? u + (u.indexOf('?') < 0 ? '?' : '&') + 'v=' + window.KO_SURUM : u; };
+(function () {
+  var of = window.fetch;
+  window.fetch = function (u, o) {
+    var s = typeof u === 'string' ? u : (u && u.url) || '';
+    if (/(^|\/)assets\//.test(s) && (s.indexOf('://') < 0 || s.indexOf(location.host) >= 0)) o = Object.assign({ cache: 'no-cache' }, o);
+    return of.call(this, u, o);
+  };
+})();
+</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});   // oyun dosyaları önbellekten (launcher)</script>
+<script src="vendor/supabase.js"></script>
+<script>
+// Beklenmeyen hataları ekranda göster (sessizce takılı kalmasın)
+(function () {
+  var shown = false;
+  function show(msg) {
+    // oyun açıldıktan sonraki tekil hatalar oyunu durdurmasın (yalnızca konsola)
+    if (window.__ko && window.__ko.state && window.__ko.state.avatar) { console.warn('Oyun içi hata:', msg); return; }
+    if (shown) return; shown = true;
+    var d = document.createElement('div'); d.id = 'hata-kutu';
+    d.innerHTML = '<b>A problem occurred while starting the game</b><pre></pre><div><button onclick="location.reload()">Retry</button> <a href="index.html">Home</a></div>';
+    d.querySelector('pre').textContent = String(msg).slice(0, 600);
+    (document.body || document.documentElement).appendChild(d);
+  }
+  addEventListener('error', function (e) { if (e.message) show(e.message + (e.filename ? '\n' + e.filename.split('/').pop() + ':' + e.lineno : '')); else if (e.target && /^(SCRIPT|LINK)$/.test(e.target.tagName)) show('Could not load file: ' + (e.target.src || e.target.href)); }, true);
+  addEventListener('unhandledrejection', function (e) { var r = e.reason; show((r && (r.stack || r.message)) || r); });
+  if (!window.supabase) addEventListener('DOMContentLoaded', function () { if (!window.supabase) show('Could not load the Supabase client (vendor/supabase.js).'); });
+})();
+</script>
+</head>
+<body>
+<canvas id="sahne"></canvas>
+
+<div id="yukleniyor"><div class="kutu"><div class="baslik">Knight Online</div><div class="cubuk"><i></i></div><div id="yukleniyor-yazi">Starting…</div></div></div>
+<script>document.getElementById('yukleniyor').classList.add('ko-yukle');   // "Knight Online yükleniyor" kutusu yok: siyah ekran → KO giriş penceresi</script>
+
+<script type="module" src="js/boot.js?v=__SURUM__"></script>
+<script type="module" src="js/main.js?v=__SURUM__"></script>
+</body>
+</html>
