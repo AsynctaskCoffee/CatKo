@@ -35,3 +35,11 @@ Demo modunda dünya tek başına canlıdır. `client/vendor/ko-demo-bot.js` ger�
 - Moradon kapısı → Ardream ışınlanması ücretsiz (`warp_git`). Market (NPC + bot tezgâhları) tamamen bedava.
 - Botları kapat: adrese `?bot=0` ya da `localStorage.setItem('ko-bots','0')`.
 - **Çevrimiçi**: adrese `?gercek=1` eklenirse gerçek Supabase arka ucu kullanılır (diğer gerçek oyuncular o zaman görünür). Demo modu varsayılandır (offline-first).
+
+## Mobil
+
+Dokunmatik cihazlarda (telefon/tablet) otomatik "mobil mod" açılır (`?mobil=0` kapatır, `?mobil=1` zorlar):
+- Sol yarıya dokun-sürükle: joystick · sağ tarafta sürükle: kamera · iki parmak: yakınlaş/döndür · dokun: tıkla/yürü · basılı tut: sağ tık.
+- Sağ altta ⚔ (saldır), Z (hedef), 1-4 (kısayol çubuğu); üstte 🎒 çanta, 💬 sohbet, H menü, Esc, tam ekran, arayüzü gizle.
+- Arayüz (HUD) ekran boyutuna göre ölçeklenir; küçük ekranda sohbet/mesaj panelleri 💬 ile açılır.
+- Ana sayfa duyarlı; PWA bildirimi (manifest) ile ana ekrana eklenip tam ekran açılabilir.

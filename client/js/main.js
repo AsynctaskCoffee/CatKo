@@ -1158,8 +1158,8 @@ $('mini-dot').addEventListener('click', (e) => {
             const { initGmWindow } = await import('./gm-pencere.js');
             state.gmWin = initGmWindow({ state, player, sb: BOOT.sb, character: BOOT.character, zone: ZONE, zoneName: () => hud.zoneName || ZONE, hud, say: (t, cls) => addLine(null, t, 0, cls), towers: () => state.towers });
             ustDugmeler();
-            { const T = await import('./tablet.js'); if (T.tabletAcik()) T.tabletUygula({ state }); }   // (7.11) GM tablet modu (sunucu listesi / GM paneli ayarlarından açılır)
           }
+          { const T = await import('./tablet.js'); if (T.tabletAcik()) T.tabletUygula({ state }); }   // dokunmatik cihazlarda herkes için; GM paneli ayarlarından da açılır (7.11)
         }
       }).catch((e) => console.warn('NPC', e));
     // Oyuna girişte yüklenen her şey (savaş, çok oyunculu, NPC, pet, efektler, envanter…) yükleme ekranı açıkken hazırlanır;

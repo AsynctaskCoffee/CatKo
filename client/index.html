@@ -2,8 +2,14 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>CatKo · Tarayıcıda Knight Online</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <meta name="description" content="CatKo: indirme yok, kurulum yok. Botlarla dolu canlı dünya, PK, CZ, bedava pazar. Çevrimdışı çalışır.">
 <meta name="theme-color" content="#120f1a">
 <link rel="icon" href="catko-logo.svg" type="image/svg+xml">
@@ -44,7 +50,9 @@ table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padd
 .kar { color: #ff8a7a; } .elm { color: #8ab8ff; }
 .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; } .keys b { color: var(--acc); font-weight: 600; }
 footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--mut); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
-@media (max-width: 800px) { .hero, .two { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } header.top nav { display: none; } }
+@media (max-width: 800px) { .hero, .two { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } header.top { flex-wrap: wrap; } header.top nav { margin-left: 0; width: 100%; order: 3; gap: 14px; font-size: 13px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; } .hero { padding-top: 8px; } .cta { padding: 13px 20px; } }
+@supports (padding: max(0px)) { .w { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); } }
+button, a.cta, input { min-height: 44px; }
 </style>
 <script src="vendor/supabase.js" defer></script>
 <script src="vendor/ko-demo.js" defer></script>

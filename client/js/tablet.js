@@ -3,7 +3,12 @@
 //  - Oyun ekranı: dokun = tıkla, tek parmak sürükle = kamera, basılı tut = sağ tık, iki parmak = yakınlaş / döndür; sol altta joystick, sağ altta Z / R
 //  - <html class="ko-tablet">: büyük dokunma hedefleri, sayfa yakınlaştırma / kaydırma kapalı (client.css)
 const ANAHTAR = 'ko-gm-tablet';
-export const tabletAcik = () => { try { return localStorage.getItem(ANAHTAR) === '1'; } catch { return false; } };
+// dokunmatik cihazda (telefon / tablet) varsayılan AÇIK; kullanıcı kapatırsa ('0') kapalı kalır. ?mobil=0 / ?mobil=1 adresten zorlar.
+const dokunmatik = () => { try { return matchMedia('(pointer: coarse)').matches && !matchMedia('(hover: hover) and (pointer: fine)').matches; } catch { return false; } };
+export const tabletAcik = () => {
+  try { const q = new URLSearchParams(location.search).get('mobil'); if (q === '0') return false; if (q === '1') return true; } catch {}
+  try { const v = localStorage.getItem(ANAHTAR); return v === '1' || (v === null && dokunmatik()); } catch { return dokunmatik(); }
+};
 let serit = null, jest = null, kumanda = null, hover = null, joyApi = null;
 
 function tus(code, key) {
@@ -25,24 +30,25 @@ export function tamEkranDegis() {
 
 // state verilmezse (lobi / sunucu listesi) yalnız görünüm sınıfı; oyunda (GM) düğme şeridi ve iki parmak kamera jesti de kurulur
 export function tabletUygula({ state, acik = tabletAcik() } = {}) {
-  try { localStorage.setItem(ANAHTAR, acik ? '1' : '0'); } catch {}
+  try { if (arguments[0]?.acik !== undefined || !dokunmatik()) localStorage.setItem(ANAHTAR, acik ? '1' : '0'); } catch {}
   document.documentElement.classList.toggle('ko-tablet', acik);
   const vp = document.querySelector('meta[name=viewport]');
   if (vp) vp.content = acik ? 'width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover' : 'width=device-width,initial-scale=1';
-  if (acik && state) { seritKur(state); jestKur(state); kumandaKur(state); hoverKur(); } else if (!acik) { serit?.remove(); serit = null; jest?.(); jest = null; kumanda?.(); kumanda = null; hover?.(); hover = null; if (state) state.joy = null; }
+  if (acik && state) { seritKur(state); jestKur(state); kumandaKur(state); hoverKur(); uyumKur(); } else if (!acik) { serit?.remove(); serit = null; jest?.(); jest = null; kumanda?.(); kumanda = null; hover?.(); hover = null; if (state) state.joy = null; }
   dispatchEvent(new CustomEvent('ko-tablet', { detail: acik }));
 }
 
 function seritKur(state) {
   if (serit?.isConnected) return;
   serit = document.createElement('div'); serit.id = 'ko-tablet-serit';
-  serit.innerHTML = [['gm', 'GM', 'GM paneli'], ['sohbet', '💬', 'Sohbet / GM komutu'], ['h', 'H', 'H menüsü (komutlar)'], ['esc', 'Esc', 'Açık pencereyi kapat'], ['tam', '⛶', 'Tam ekran'], ['ui', '👁', 'Arayüzü gizle / göster']]
+  serit.innerHTML = [...(state.ghost || state.gmWin ? [['gm', 'GM', 'GM paneli']] : []), ['canta', '🎒', 'Çanta (I)'], ['sohbet', '💬', 'Sohbet'], ['h', 'H', 'H menüsü (komutlar)'], ['esc', 'Esc', 'Açık pencereyi kapat'], ['tam', '⛶', 'Tam ekran'], ['ui', '👁', 'Arayüzü gizle / göster']]
     .map(([k, t, ip]) => `<button data-k="${k}" title="${ip}">${t}</button>`).join('');
   serit.addEventListener('pointerdown', (e) => e.stopPropagation());
   serit.addEventListener('click', (e) => {
     const k = e.target.closest('[data-k]')?.dataset.k; if (!k) return;
     if (k === 'gm') return state?.gmWin?.toggle?.();
-    if (k === 'sohbet') { const i = document.getElementById('sohbet-giris'); if (i) { i.closest('[hidden]')?.removeAttribute('hidden'); i.focus(); } return; }
+    if (k === 'canta') return tus('KeyI', 'i');
+    if (k === 'sohbet') { const h = document.documentElement; if (innerHeight <= 520 || innerWidth < 700) { h.classList.toggle('ko-sohbet-ac'); if (!h.classList.contains('ko-sohbet-ac')) return; } const i = document.getElementById('sohbet-giris'); if (i) { i.closest('[hidden]')?.removeAttribute('hidden'); i.focus(); } return; }
     if (k === 'h') return tus('KeyH', 'h');
     if (k === 'esc') return tus('Escape', 'Escape');
     if (k === 'tam') return tamEkranDegis();
@@ -127,7 +133,7 @@ function kumandaKur(state) {
   if (kumanda) return;
   const joy = document.createElement('div'); joy.id = 'ko-joy'; joy.innerHTML = '<i></i>';
   const tuslar = document.createElement('div'); tuslar.id = 'ko-atak';
-  tuslar.innerHTML = '<button data-k="KeyZ" title="Target (Z)">Z</button><button data-k="KeyR" class="r" title="Attack (R)">R</button>';
+  tuslar.innerHTML = '<button data-k="KeyZ" title="Target (Z)">Z</button><button data-k="KeyR" class="r" title="Attack (R)">⚔</button>' + [1, 2, 3, 4].map((n) => `<button data-k="Digit${n}" class="s s${n}" title="Hotbar ${n}">${n}</button>`).join('');
   // (7.11) joystick yalnız ekranın sol bölümüne dokununca, dokunulan yerde görünür; parmak kalkınca gizlenir (jestKur yönetir)
   const top = joy.firstChild; let mx = 0, my = 0;
   const R = () => (joy.offsetWidth || 150) * 0.38;
@@ -144,7 +150,7 @@ function kumandaKur(state) {
   tuslar.addEventListener('pointerdown', (e) => {
     const b = e.target.closest('[data-k]'); e.stopPropagation(); e.preventDefault(); if (!b) return;
     b.classList.add('basili'); setTimeout(() => b.classList.remove('basili'), 140);
-    tus(b.dataset.k, b.dataset.k.slice(3).toLowerCase()); navigator.vibrate?.(8);
+    const kk = b.dataset.k; tus(kk, kk.startsWith('Digit') ? kk.slice(5) : kk.slice(3).toLowerCase()); navigator.vibrate?.(8);
   });
   tuslar.addEventListener('click', (e) => e.stopPropagation());
   document.body.append(joy, tuslar);
@@ -170,4 +176,29 @@ function hoverKur() {
   };
   addEventListener('pointerdown', indir, true); addEventListener('pointerup', kaldir, true);
   hover = () => { removeEventListener('pointerdown', indir, true); removeEventListener('pointerup', kaldir, true); };
+}
+
+// (CatKo) ekran boyutuna göre arayüz ölçeği: telefon yatay / dikey, tablet. #kohud zoom'u --ko-hz değişkeninden gelir (client.css).
+let uyum = null;
+function uyumKur() {
+  if (uyum) return;
+  const h = document.documentElement;
+  const hesap = () => {
+    const w = innerWidth, y = innerHeight, yatay = w > y;
+    let z = yatay ? Math.min(1, Math.max(0.5, y / 600), w / 1100) : Math.min(1, Math.max(0.5, w / 700));
+    if (!yatay && w < 600) z = 0.55;
+    h.style.setProperty('--ko-hz', z.toFixed(2));
+    h.classList.toggle('ko-kucuk', Math.min(w, y) < 600);
+    h.classList.toggle('ko-dikey', !yatay);
+  };
+  // dikey telefonda bir kez: yatay çevir önerisi
+  try {
+    if (innerHeight > innerWidth && innerWidth < 600 && !sessionStorage.getItem('ko-yatay-ipucu')) {
+      sessionStorage.setItem('ko-yatay-ipucu', '1');
+      const n = document.createElement('div'); n.id = 'ko-yatay-ipucu'; n.textContent = '📱↻ Daha rahat oynamak için telefonu yatay çevir';
+      n.addEventListener('pointerdown', () => n.remove()); document.body.append(n); setTimeout(() => n.remove(), 6000);
+    }
+  } catch {}
+  hesap(); addEventListener('resize', hesap); addEventListener('orientationchange', () => setTimeout(hesap, 250));
+  uyum = true;
 }

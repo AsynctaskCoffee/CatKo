@@ -1,0 +1,17 @@
+{
+  "name": "CatKo",
+  "short_name": "CatKo",
+  "description": "Tarayıcıda Knight Online — botlar, PK, CZ, bedava pazar",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#120f1a",
+  "theme_color": "#120f1a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "catko-logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
