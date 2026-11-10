@@ -152,6 +152,7 @@ export function buildTerrain(z, renderer) {
     const pos = new Float32Array(quads * 12), nor = new Int8Array(quads * 12);
     const uv1 = new Uint8Array(quads * 8), uv2 = new Uint8Array(quads * 8);
     const lay = new Int16Array(quads * 8);    // tex1 katmanı, tex2 katmanı (-1: yok, -2: renk haritası)
+    const nbl = new Float32Array(quads * 4).fill(-1), nbw = new Float32Array(quads * 4);   // CatKo: komşu karoyla yumuşak geçiş (katman, köşe ağırlığı)
     const yzl = new Int16Array(quads * 4), yzw = new Uint8Array(quads * 4);   // yüzey boyası: katman (karo), ağırlık (köşe)
     const idx = new Uint16Array(quads * 6);
     let q = 0;
@@ -161,6 +162,11 @@ export function buildTerrain(z, renderer) {
         const full = b & 1, d1 = (b >>> 1) & 31, d2 = (b >>> 6) & 31, t1 = (b >>> 11) & 1023, t2 = (b >>> 21) & 1023;
         const tileMode = full && (t1 < count || t1 >= YUZEY_TABAN);
         const corners = [[tx, tz], [tx, tz + 1], [tx + 1, tz + 1], [tx + 1, tz]];
+        let nbIdx = -1, nbC = null;
+        if (meta.catko && tileMode && t1 < count) {
+          const L = (x, z) => { if (x < 0 || z < 0 || x >= tiles || z >= tiles) return -1; const bb = bits[x * N + z]; return (bb & 1) && ((bb >>> 11) & 1023) < count ? (bb >>> 11) & 1023 : -1; };
+          for (const [dx, dz, cs] of [[-1, 0, [0, 1]], [1, 0, [2, 3]], [0, -1, [0, 3]], [0, 1, [1, 2]]]) { const l = L(tx + dx, tz + dz); if (l >= 0 && l !== t1) { nbIdx = l; nbC = cs; break; } }
+        }
         for (let k = 0; k < 4; k++) {
           const v = q * 4 + k, [cx, cz] = corners[k];
           pos[v * 3] = cx * T; pos[v * 3 + 1] = H(cx, cz); pos[v * 3 + 2] = cz * T;
@@ -169,6 +175,7 @@ export function buildTerrain(z, renderer) {
           uv1[v * 2] = DIR_U[dd1][c]; uv1[v * 2 + 1] = DIR_V[dd1][c];
           uv2[v * 2] = DIR_U[dd2][c]; uv2[v * 2 + 1] = DIR_V[dd2][c];
           yzl[v] = yzK[tx * N + tz]; yzw[v] = yzW[cx * N + cz];
+          if (nbIdx >= 0) { nbl[v] = nbIdx; nbw[v] = nbC.includes(k) ? 0.5 : 0; }
           lay[v * 2] = tileMode ? t1 : -2;
           lay[v * 2 + 1] = tileMode && t2 < count ? t2 : -1;
         }
@@ -184,7 +191,7 @@ export function buildTerrain(z, renderer) {
     geo.setAttribute('uv1t', new THREE.BufferAttribute(uv1, 2));
     geo.setAttribute('uv2t', new THREE.BufferAttribute(uv2, 2));
     geo.setAttribute('layers', new THREE.BufferAttribute(lay, 2));
-    geo.setAttribute('yzl', new THREE.BufferAttribute(yzl, 1)); geo.setAttribute('yzw', new THREE.BufferAttribute(yzw, 1, true));
+    geo.setAttribute('nbl', new THREE.BufferAttribute(nbl, 1)); geo.setAttribute('nbw', new THREE.BufferAttribute(nbw, 1)); geo.setAttribute('yzl', new THREE.BufferAttribute(yzl, 1)); geo.setAttribute('yzw', new THREE.BufferAttribute(yzw, 1, true));
     geo.setIndex(new THREE.BufferAttribute(idx, 1));
     geo.computeBoundingSphere();
     return geo;
@@ -238,12 +245,12 @@ export function buildTerrain(z, renderer) {
       uLodNear: { value: 300 }, uLodFar: { value: 460 },   // karo dokusu sis başlangıcına kadar korunur
     },
     vertexShader: /* glsl */`
-      in vec2 uv1t; in vec2 uv2t; in vec2 layers; in float yzl; in float yzw;
-      flat out float vYzL; out float vYzW;
+      in vec2 uv1t; in vec2 uv2t; in vec2 layers; in float yzl; in float yzw; in float nbl; in float nbw;
+      flat out float vYzL; out float vYzW; flat out float vNbL; out float vNbW;
       out vec2 vUv1; out vec2 vUv2; flat out vec2 vLayers; out vec3 vWorld; out vec3 vNormal; out float vDist;
       out vec2 vKO;
       void main() {
-        vYzL = yzl; vYzW = yzw;
+        vYzL = yzl; vYzW = yzw; vNbL = nbl; vNbW = nbw;
         vUv1 = uv1t; vUv2 = uv2t; vLayers = layers; vNormal = normal; vKO = position.xz;
         vec4 w = modelMatrix * vec4(position, 1.0); vWorld = w.xyz;
         vec4 mv = viewMatrix * w; vDist = -mv.z;
@@ -255,7 +262,7 @@ export function buildTerrain(z, renderer) {
       uniform sampler2D uDetail; uniform int uHasDetail;
       uniform sampler2D uLM; uniform sampler2D uLMIdx; uniform int uHasLM; uniform vec4 uLMInfo;
       uniform vec3 uLight, uFogColor, uSunDir, uSun; uniform float uSunAmt; uniform int uDebug; uniform float uFogNear, uFogFar, uLodNear, uLodFar;
-      flat in float vYzL; in float vYzW;
+      flat in float vYzL; in float vYzW; flat in float vNbL; in float vNbW;
       in vec2 vUv1; in vec2 vUv2; flat in vec2 vLayers; in vec3 vWorld; in vec3 vNormal; in float vDist; in vec2 vKO;
       out vec4 fragColor;
       // Tüm hesap orijinaldeki gibi gama uzayında (D3D sabit işlem hattı)
@@ -264,6 +271,7 @@ export function buildTerrain(z, renderer) {
         vec3 col;
         if (vLayers.x >= 0.0) {
           vec3 a = vLayers.x >= ${YUZEY_TABAN}.0 ? (uHasYuzey == 1 ? texture(uYuzey, vec3(vUv1, vLayers.x - ${YUZEY_TABAN}.0)).rgb : cm) : texture(uTiles, vec3(vUv1, vLayers.x)).rgb;   // D3DTOP_SELECTARG1 (yüzey kütüphanesi: GM boyası)
+          if (vNbL >= 0.0 && vNbW > 0.001 && vLayers.x < ${YUZEY_TABAN}.0) a = mix(a, texture(uTiles, vec3(vUv1, vNbL)).rgb, vNbW);
           vec3 b = vLayers.y >= 0.0 ? texture(uTiles, vec3(vUv2, vLayers.y)).rgb : vec3(0.0);
           vec3 tileCol = min(a + b, vec3(1.0));                                         // D3DTOP_ADD
           col = mix(tileCol, cm, smoothstep(uLodNear, uLodFar, vDist));
