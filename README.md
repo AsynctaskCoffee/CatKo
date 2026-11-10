@@ -64,3 +64,7 @@ node build.mjs && PORT=8099 node server.mjs
 ```
 
 Çıktı `client/zones/<bölge>/` altına yazılır; bu klasör `.gitignore`'dadır, yani **repoya ve GitHub Pages'e girmez**. Yalnızca arazi okunur (karo dokuları CatKo atlasına indirilir, bina/sur nesneleri dönüştürülmez). Orijinal veriyi yayınlamak telif nedeniyle önerilmez. Yayındaki sürüm CatKo'nun kendi prosedürel dünyasını kullanır.
+
+## Orijinal şekil kütüphanesi
+
+`client/assets/dunya-kutup/` içindeki orijinal şekil + doku kütüphanesi (kutup.json, sekil/*.bin, doku/*.bin) CatKo dünyasında kullanılır (`js/catko-orj.js`): Moradon'da gerçek ev, sur, çeşme, çadır, ağaç ve kayalar; Ardream'de kale evleri, ağaçlar ve taşlar. Yerleşim (hangi şeklin nerede durduğu) pakette olmadığı için CatKo düzenine göre yerleştirilir. Kütüphane yüklenemezse otomatik olarak prosedürel yapılara döner (`?orj=0` ile de kapatılabilir).
