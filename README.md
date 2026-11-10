@@ -24,3 +24,14 @@ Moradon haritası üretir. Gerçek harita dosyaları `client/zones/<bölge>/` al
   savaş, exp/seviye, loot, envanter/kuşanma, iksirler, mağaza (shop_list/buy/sell), görevler (al/öldürme sayacı/teslim), beceriler (skill_use).
   Canavarlar seviyeye göre başlangıç noktası çevresinde halkalar halinde doğar (düşük seviye yakın). Yalnızca tek oyunculu.
 - Eksik RPC'leri görmek: `localStorage.setItem('ko-demo-log','1')`
+
+## CatKo: botlar, PK, CZ, bedava pazar
+
+Demo modunda dünya tek başına canlıdır. `client/vendor/ko-demo-bot.js` gerçek çok oyunculu protokolü (meta/pos/hp/pvp/chat/anim) tarayıcı içinde taklit eder; oyun botları sıradan oyuncu gibi görür.
+
+- **Moradon**: 6 arena düellocusu (iki arena serbest PK), 8 bot pazar tezgâhı (hepsi bedava), 7 gezgin/sohbet eden bot.
+- **CZ (Chaos Zone) = Ardream (`freezone_a`)**: her ulustan 9 bot. Devriye, hedef seçimi (yakın/zayıf/düşük canlı), yaralanınca kaçış + pot, az kalınca gruba dönüş, rahip iyileştirmesi, kapıda spawn-camp yok, 8 sn'de diriliş. Oyuncu bölgesine kayarlar, böylece savaş çıkar.
+- Oyuncu botlara `pvp_attack`/`pvp_skill` ile vurur (exp, NP, noah kazanır); botlar oyuncuya vurur ve öldürebilir. CZ'de ölünce kendi kale kapında dirilirsin.
+- Moradon kapısı → Ardream ışınlanması ücretsiz (`warp_git`). Market (NPC + bot tezgâhları) tamamen bedava.
+- Botları kapat: adrese `?bot=0` ya da `localStorage.setItem('ko-bots','0')`.
+- **Çevrimiçi**: adrese `?gercek=1` eklenirse gerçek Supabase arka ucu kullanılır (diğer gerçek oyuncular o zaman görünür). Demo modu varsayılandır (offline-first).

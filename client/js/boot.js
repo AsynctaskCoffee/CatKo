@@ -22,6 +22,6 @@ window.KO_BOOT = (async () => {
     const { runLobby } = await import('./lobby.js');
     character = await runLobby({ sb, session });
   }
-  document.title = `${character.name} · KO Web`;
+  document.title = `${character.name} · CatKo`;
   return { sb, session, character };
 })();

@@ -3,115 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KO Web · Ares</title>
-<meta name="description" content="Knight Online tarayıcıda — indirme yok. Ares sunucusu.">
-<meta name="theme-color" content="#000000">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l4 10h10l-8 6 3 11-9-7-9 7 3-11-8-6h10z' fill='%23d2ba5b'/%3E%3C/svg%3E">
-<link rel="preload" href="k2d/banner/sahne.webp" as="image">
-<link rel="stylesheet" href="panel.css?v=__SURUM__">
+<title>CatKo · Tarayıcıda Knight Online</title>
+<meta name="description" content="CatKo: indirme yok, kurulum yok. Botlarla dolu canlı dünya, PK, CZ, bedava pazar. Çevrimdışı çalışır.">
+<meta name="theme-color" content="#120f1a">
+<link rel="icon" href="catko-logo.svg" type="image/svg+xml">
+<style>
+:root { --bg:#120f1a; --bg2:#1b1626; --card:#221b30; --line:#3a2f4d; --tx:#efe7f7; --mut:#a899bd; --acc:#ffb066; --acc2:#e8794a; --ok:#7ad27a; }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; color: var(--tx); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height: 100vh;
+  background: radial-gradient(1200px 600px at 50% -10%, #3a2552 0%, transparent 60%), radial-gradient(800px 500px at 100% 100%, #4a2a2a55 0%, transparent 60%), var(--bg); }
+a { color: var(--acc); text-decoration: none; } a:hover { text-decoration: underline; }
+.w { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header.top { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+header.top img { width: 40px; height: 40px; }
+header.top b { font-size: 22px; letter-spacing: .5px; }
+header.top nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+.hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: center; padding: 28px 0 36px; }
+.hero h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.05; margin: 0 0 14px; }
+.hero h1 span { background: linear-gradient(90deg, var(--acc), var(--acc2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: var(--mut); font-size: 18px; margin: 0 0 22px; max-width: 34em; }
+.cta { display: inline-flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 12px; font-weight: 700; font-size: 18px; color: #1a1020; background: linear-gradient(90deg, var(--acc), var(--acc2)); box-shadow: 0 8px 30px #e8794a44; border: 0; cursor: pointer; }
+.cta:hover { text-decoration: none; filter: brightness(1.06); }
+.cta.alt { background: transparent; color: var(--tx); border: 1px solid var(--line); box-shadow: none; font-size: 16px; padding: 12px 20px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.card h2 { margin: 0 0 12px; font-size: 18px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.tabs button { flex: 1; padding: 9px; background: var(--bg2); color: var(--mut); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font: inherit; }
+.tabs button.on { color: var(--tx); border-color: var(--acc); }
+label { display: block; font-size: 13px; color: var(--mut); margin: 10px 0 4px; }
+input { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg2); color: var(--tx); font: inherit; }
+input:focus { outline: 2px solid var(--acc); outline-offset: 0; }
+form .cta { width: 100%; justify-content: center; margin-top: 16px; font-size: 16px; padding: 12px; }
+.msg { min-height: 20px; margin-top: 10px; font-size: 14px; color: #ff8a8a; } .msg.ok { color: var(--ok); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 8px 0 36px; }
+.grid .card p { margin: 0; color: var(--mut); font-size: 15px; } .grid .ic { font-size: 28px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 36px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 6px; text-align: left; border-bottom: 1px solid var(--line); } th { color: var(--mut); font-weight: 500; }
+.kar { color: #ff8a7a; } .elm { color: #8ab8ff; }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; } .keys b { color: var(--acc); font-weight: 600; }
+footer { border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--mut); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+@media (max-width: 800px) { .hero, .two { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } header.top nav { display: none; } }
+</style>
 <script src="vendor/supabase.js" defer></script>
 <script src="vendor/ko-demo.js" defer></script>
 <script src="vendor/ko-demo-rpc.js" defer></script>
 <script src="vendor/ko-demo-oyun.js" defer></script>
-<script type="module" src="panel.js?v=__SURUM__"></script>
+<script src="vendor/ko-demo-bot.js" defer></script>
+<script type="module" src="catko-giris.js?v=__SURUM__"></script>
 </head>
 <body>
-<div id="sayfa">
-  <!-- ÜST: giriş hücresi + başlık -->
-  <div id="ust">
-    <aside id="giris-hucre">
-      <a class="logo-link" href="#anasayfa" aria-label="MineKO — Ana sayfa"><span class="logo-kap"><img src="k2d/mineko-logo.webp" width="360" height="141" alt="MineKO"><span class="logo-parilti" aria-hidden="true"></span><span class="logo-tas" aria-hidden="true"></span></span><span class="logo-kivilcim" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></a>
-      <!-- misafir -->
-      <form id="f-giris-kisa" data-only="misafir" autocomplete="on">
-        <div class="giris-satir">
-          <img src="k2d/kullanici.webp" width="55" height="15" alt="E-posta">
-          <input name="email" type="text" required autocomplete="username" aria-label="ID ya da e-posta" placeholder="ID / e-posta">
-        </div>
-        <div class="giris-satir">
-          <img src="k2d/sifre.webp" width="55" height="15" alt="Şifre">
-          <input name="password" type="password" required minlength="6" autocomplete="current-password" aria-label="Şifre" placeholder="şifre">
-        </div>
-        <button class="btn-giris" aria-label="Giriş"></button>
-        <div class="giris-alt">
-          <a class="btn-kayit" href="#kayit" aria-label="Kayıt ol"></a>
-          <a class="btn-sifre" href="#sifre" aria-label="Şifremi unuttum"></a>
-        </div>
-      </form>
-      <!-- üye -->
-      <div class="uye-kutu" data-only="uye" hidden>
-        <p>Hoş geldin, <b id="hesap-adi"></b></p>
-        <a class="oyna-kucuk" href="launcher.html">▶ OYUNA GİR</a>
-        <p class="uye-linkler"><a href="#hesap">Hesabım</a> · <a href="#sifre-degis">Şifre</a> · <a href="#" id="cikis">Çıkış</a></p>
-      </div>
-    </aside>
-    <div id="baslik">
-      <a class="bn" href="#anasayfa" aria-label="MineKO — Ana sayfa">
-        <div class="bn-sahne"></div>
-        <div class="bn-bulut b0"></div><div class="bn-bulut b1"></div><div class="bn-bulut b2"></div>
-        <div class="bn-isik bn-altin"></div><div class="bn-isik bn-mavi"></div>
-        <canvas class="bn-fx" aria-hidden="true"></canvas><div class="bn-golge"></div>
-      </a>
-      <img class="serit" src="k2d/serit.webp" width="726" height="49" alt="">
+<div class="w">
+  <header class="top">
+    <img src="catko-logo.svg" alt="" width="40" height="40"><b>CatKo</b>
+    <nav><a href="#ozellik">Özellikler</a><a href="#siralama">Sıralama</a><a href="#nasil">Nasıl oynanır</a><a href="klasik.html">Klasik panel</a></nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Tarayıcıda <span>Knight Online</span>, patisiyle.</h1>
+      <p>İndirme yok, kurulum yok. Botlarla dolu canlı bir dünya: arenada düello, Ardream'de CZ savaşı, her şeyin bedava olduğu pazar. İnternet olmadan da çalışır.</p>
+      <div class="row"><a class="cta" href="launcher.html" id="oyna">▶ Oyna</a><a class="cta alt" href="#nasil">Nasıl oynanır?</a></div>
     </div>
-  </div>
+    <div class="card" id="giris-kart">
+      <div data-only="misafir">
+        <div class="tabs"><button class="on" data-tab="giris" type="button">Giriş</button><button data-tab="kayit" type="button">Kayıt ol</button></div>
+        <form id="f-giris" autocomplete="on">
+          <label for="e1">E-posta</label><input id="e1" name="email" type="email" required autocomplete="username" placeholder="kedi@ornek.com">
+          <label for="p1">Şifre</label><input id="p1" name="password" type="password" required minlength="6" autocomplete="current-password" placeholder="en az 6 karakter">
+          <button class="cta" type="submit">Giriş yap</button>
+        </form>
+        <form id="f-kayit" autocomplete="on" hidden>
+          <label for="a2">Hesap adı</label><input id="a2" name="account" type="text" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]+" autocomplete="nickname" placeholder="harf / rakam">
+          <label for="e2">E-posta</label><input id="e2" name="email" type="email" required autocomplete="username" placeholder="kedi@ornek.com">
+          <label for="p2">Şifre</label><input id="p2" name="password" type="password" required minlength="6" autocomplete="new-password" placeholder="en az 6 karakter">
+          <button class="cta" type="submit">Hesap oluştur</button>
+        </form>
+        <div class="msg" id="msg" role="status"></div>
+      </div>
+      <div data-only="uye" hidden>
+        <h2>Hoş geldin, <span id="hesap-adi"></span> 🐾</h2>
+        <p style="color:var(--mut);margin:0 0 16px">Karakterini seç ve dünyaya gir.</p>
+        <a class="cta" href="launcher.html" style="width:100%;justify-content:center">▶ Oyuna gir</a>
+        <p style="margin:14px 0 0;font-size:14px"><a href="#" id="cikis">Çıkış yap</a></p>
+      </div>
+    </div>
+  </section>
 
-  <div id="govde">
-    <!-- SOL SÜTUN -->
-    <aside id="sol">
-      <section class="nav-kutu">
-        <h2 class="nav1">MENÜ</h2>
-        <ul class="nav2" id="menu">
-          <li><a href="#anasayfa">Ana Sayfa</a></li>
-          <li><a href="launcher.html" class="oyna-link">Oyna (tarayıcıda)</a></li>
-          <li><a href="#siralama">Sıralamalar</a></li>
-          <li><a href="magaza.html" class="oyna-link">Mağaza</a></li>
-          <li><a href="#kurallar">Kurallar</a></li>
-          <li><a href="#iletisim">İletişim</a></li>
-          <li id="gm-menu" hidden><a href="#yonetici" class="gm-link">Yönetici paneli</a></li>
-        </ul>
-      </section>
+  <section class="grid" id="ozellik">
+    <div class="card"><div class="ic">🤖</div><h2>Akıllı botlar</h2><p>Botlar gezer, sohbet eder, yaralanınca kaçıp pot içer, gruba döner. Sen yazınca cevap verirler.</p></div>
+    <div class="card"><div class="ic">⚔️</div><h2>PK &amp; CZ</h2><p>Moradon arenalarında serbest düello, Ardream'de (CZ) iki ulusun kıyasıya savaşı. Ölünce kalede dirilirsin.</p></div>
+    <div class="card"><div class="ic">🛒</div><h2>Bedava pazar</h2><p>Bot esnafların tezgâhları ve tüm NPC marketleri ücretsiz: pot, silah, zırh — hepsi senin.</p></div>
+  </section>
 
-      <section class="nav-kutu">
-        <h2 class="nav1">SUNUCU</h2>
-        <table class="nav-tablo">
-          <tr><td>Ares</td><td id="b-sunucu">…</td></tr>
-          <tr><td>Oyundakiler</td><td id="b-online" class="kirmizi">0</td></tr>
-          <tr><td>Karakter</td><td>[<span id="b-toplam">…</span>]</td></tr>
-          <tr><td>Karus Char</td><td>[<span id="b-karus">…</span>]</td></tr>
-          <tr><td>Human Char</td><td>[<span id="b-elmo">…</span>]</td></tr>
-        </table>
-      </section>
+  <section class="two" id="siralama">
+    <div class="card"><h2>Sıralama</h2><table><thead><tr><th>#</th><th>Karakter</th><th>Ulus</th><th>Seviye</th></tr></thead><tbody id="rank"><tr><td colspan="4" style="color:var(--mut)">Henüz karakter yok — ilk sen ol!</td></tr></tbody></table></div>
+    <div class="card" id="nasil"><h2>Nasıl oynanır</h2>
+      <div class="keys"><b>Hareket</b><span>W A S D / yön tuşları / fare ile tıkla</span><b>Saldırı</b><span>Canavara ya da rakibe tıkla</span><b>Çanta</b><span>I</span><b>Pazar</b><span>Moradon'da güneydeki tezgâhlara tıkla</span><b>CZ</b><span>Moradon kapısı → Ardream (ücretsiz)</span><b>Arena</b><span>Moradon'daki iki arena serbest PK alanıdır</span><b>Botlar</b><span>Kapatmak için adrese <code>?bot=0</code> ekle</span></div>
+    </div>
+  </section>
 
-      <section class="nav-kutu">
-        <h2 class="nav1">SAVAŞ &amp; KRAL</h2>
-        <table class="nav-tablo">
-          <tr><td>Lunar War</td><td class="turuncu">Pz 20:30</td></tr>
-          <tr><td>Delos War</td><td class="turuncu">Pe 21:30</td></tr>
-          <tr><td>Bifrost</td><td class="turuncu">19:00</td></tr>
-          <tr class="baslik-satir"><td class="karus">Karus Kralı</td><td></td></tr>
-          <tr><td colspan="2" id="kral-1" class="kral">—</td></tr>
-          <tr class="baslik-satir"><td class="elmo">Human Kralı</td><td></td></tr>
-          <tr><td colspan="2" id="kral-2" class="kral">—</td></tr>
-        </table>
-      </section>
-
-      <section class="nav-kutu">
-        <h2 class="nav1">ANKET</h2>
-        <div class="nav-metin" id="anket"></div>
-      </section>
-    </aside>
-
-    <!-- İÇERİK -->
-    <main id="orta" tabindex="-1">
-      <div id="flash" class="flash" hidden></div>
-      <div id="icerik"></div>
-    </main>
-  </div>
-
-  <footer id="alt">
-    <div class="alt-ust"></div>
-    <div class="alt-alt"><p class="alt-imza"><b>MineKO</b> Web Edition <span>v1.0.0</span> <i>Original</i></p></div>
-  </footer>
+  <footer><span>© CatKo — bir hayran projesi. Knight Online, Mgame/NTTGame'in ticari markasıdır; bağlı değiliz.</span><span><a href="klasik.html">Klasik panel</a></span><span id="mod">Çevrimdışı mod: veriler bu tarayıcıda saklanır.</span></footer>
 </div>
 </body>
 </html>

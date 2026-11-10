@@ -28,7 +28,8 @@
     if (!DB || !DB.tables) DB = { users: [], seq: {}, tables: {} };
     var T = DB.tables;
     if (T.servers && T.servers[0] && T.servers[0].is_open === undefined) T.servers[0].is_open = true;
-    if (!T.servers) T.servers = [{ id: 1, name: 'Ares', sort: 1, is_open: true, aktif: true, max_online: 1000 }];
+    if (T.servers && T.servers[0] && T.servers[0].name === 'Ares') T.servers[0].name = 'CatKo';
+    if (!T.servers) T.servers = [{ id: 1, name: 'CatKo', sort: 1, is_open: true, aktif: true, max_online: 1000 }];
     if (!T.race_bases) T.race_bases = [
       { race: 1, str: 65, sta: 65, dex: 60, intel: 50, cha: 50 }, { race: 2, str: 65, sta: 65, dex: 60, intel: 50, cha: 50 },
       { race: 11, str: 60, sta: 60, dex: 70, intel: 50, cha: 50 }, { race: 12, str: 60, sta: 60, dex: 70, intel: 50, cha: 50 },
@@ -36,7 +37,7 @@
       { race: 13, str: 60, sta: 60, dex: 60, intel: 55, cha: 50 }, { race: 14, str: 60, sta: 60, dex: 60, intel: 55, cha: 50 },
       { race: 5, str: 60, sta: 60, dex: 60, intel: 60, cha: 50 }, { race: 6, str: 60, sta: 60, dex: 60, intel: 60, cha: 50 }];
     ['characters', 'profiles', 'inventory', 'gms', 'giris_duyuru', 'ranking', 'pm_mesaj', 'takas', 'level_up', 'kral'].forEach(function (t) { if (!T[t]) T[t] = []; });
-    if (!T.giris_duyuru.length) T.giris_duyuru.push({ id: 1, sira: 1, baslik: 'KO Web Demo', metin: 'Bu sürüm Supabase olmadan, tarayıcı içi demo modunda çalışır. Veriler yalnızca bu tarayıcıda saklanır.' });
+    if (!T.giris_duyuru.length) T.giris_duyuru.push({ id: 1, sira: 1, baslik: 'CatKo', metin: 'Bu sürüm Supabase olmadan, tarayıcı içi demo modunda çalışır. Veriler yalnızca bu tarayıcıda saklanır.' });
   }
   var saveT = null;
   function save() { try { ls.setItem(DBK, JSON.stringify(DB, function (k, v) { return k === 'mob_instances' ? undefined : v; })); } catch (e) { warn('kayıt başarısız', e); } }
@@ -271,8 +272,17 @@
       setTimeout(function () { try { l.cb({ schema: 'public', table: tbl, eventType: type, new: nw ? clone(nw) : {}, old: old ? clone(old) : {}, commit_timestamp: new Date().toISOString() }); } catch (e) { console.error(e); } }, 0);
     });
   }
+  // Yerel yayın merkezi: aynı konudaki kanallar birbirine ve botlara olayları iletir (Supabase Realtime broadcast taklidi)
+  var HUB = { chans: {}, taps: {}, onsub: [] }; window.KO_DEMO_API.hub = HUB;
+  HUB.emit = function (topic, event, payload, except) {
+    (HUB.chans[topic] || []).slice().forEach(function (c) {
+      if (c === except) return;
+      c._bc.forEach(function (h) { if (h.ev === event) setTimeout(function () { try { h.cb({ event: event, type: 'broadcast', payload: payload }); } catch (e) { console.warn('hub', e); } }, 0); });
+    });
+  };
+  HUB.tap = function (topic, fn) { (HUB.taps[topic] = HUB.taps[topic] || []).push(fn); };
   function mkChannel(name) {
-    var ch = { topic: name, state: 'joined' }, bc = [];
+    var ch = { topic: name, state: 'joined', _bc: [] }, bc = ch._bc;
     ch.on = function (kind, cfg, cb) {
       if (kind === 'postgres_changes' && cfg && cb) {
         var f = null, m = cfg.filter && /^([a-z_]+)=eq\.(.*)$/.exec(cfg.filter);
@@ -281,9 +291,18 @@
       } else if (kind === 'broadcast' && cb) bc.push({ ev: cfg && cfg.event, cb: cb });
       return ch;
     };
-    ch.subscribe = function (cb) { if (cb) setTimeout(function () { cb('SUBSCRIBED'); }, 0); return ch; };
-    ch.unsubscribe = async function () { return 'ok'; };
-    ch.send = async function () { return 'ok'; };
+    ch.subscribe = function (cb) {
+      var l = HUB.chans[name] = HUB.chans[name] || []; if (l.indexOf(ch) < 0) l.push(ch);
+      setTimeout(function () { if (cb) cb('SUBSCRIBED'); HUB.onsub.forEach(function (f) { try { f(name, ch); } catch (e) { console.warn('hub', e); } }); }, 0); return ch;
+    };
+    ch.unsubscribe = async function () { var l = HUB.chans[name]; if (l && l.indexOf(ch) >= 0) l.splice(l.indexOf(ch), 1); return 'ok'; };
+    ch.send = async function (m) {
+      if (m && m.type === 'broadcast') {
+        HUB.emit(name, m.event, m.payload, ch);
+        (HUB.taps[name] || []).forEach(function (f) { try { f(m.event, m.payload); } catch (e) { console.warn('hub', e); } });
+      }
+      return 'ok';
+    };
     ch.track = async function () { return 'ok'; };
     ch.untrack = async function () { return 'ok'; };
     ch.presenceState = function () { return {}; };
@@ -297,7 +316,7 @@
       from: function (t) { return Query(t); },
       rpc: mkRpc(auth),
       channel: mkChannel,
-      removeChannel: async function () { return 'ok'; }, removeAllChannels: async function () { return []; }, getChannels: function () { return []; },
+      removeChannel: async function (c) { try { if (c && c.unsubscribe) await c.unsubscribe(); } catch (e) {} return 'ok'; }, removeAllChannels: async function () { return []; }, getChannels: function () { return []; },
       realtime: { setAuth: function () {}, disconnect: function () {}, connect: function () {}, onOpen: function () {}, onClose: function () {}, isConnected: function () { return true; } },
       functions: { invoke: async function (n) { warn('function yok:', n); return { data: null, error: null }; } },
       storage: { from: function (b) {

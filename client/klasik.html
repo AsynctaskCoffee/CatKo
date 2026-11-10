@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CatKo · Klasik panel</title>
+<meta name="description" content="Knight Online tarayıcıda — indirme yok. Ares sunucusu.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l4 10h10l-8 6 3 11-9-7-9 7 3-11-8-6h10z' fill='%23d2ba5b'/%3E%3C/svg%3E">
+<link rel="preload" href="k2d/banner/sahne.webp" as="image">
+<link rel="stylesheet" href="panel.css?v=__SURUM__">
+<script src="vendor/supabase.js" defer></script>
+<script src="vendor/ko-demo.js" defer></script>
+<script src="vendor/ko-demo-rpc.js" defer></script>
+<script src="vendor/ko-demo-oyun.js" defer></script>
+<script src="vendor/ko-demo-bot.js" defer></script>
+<script type="module" src="panel.js?v=__SURUM__"></script>
+</head>
+<body>
+<div id="sayfa">
+  <!-- ÜST: giriş hücresi + başlık -->
+  <div id="ust">
+    <aside id="giris-hucre">
+      <a class="logo-link" href="#anasayfa" aria-label="MineKO — Ana sayfa"><span class="logo-kap"><img src="k2d/mineko-logo.webp" width="360" height="141" alt="MineKO"><span class="logo-parilti" aria-hidden="true"></span><span class="logo-tas" aria-hidden="true"></span></span><span class="logo-kivilcim" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></a>
+      <!-- misafir -->
+      <form id="f-giris-kisa" data-only="misafir" autocomplete="on">
+        <div class="giris-satir">
+          <img src="k2d/kullanici.webp" width="55" height="15" alt="E-posta">
+          <input name="email" type="text" required autocomplete="username" aria-label="ID ya da e-posta" placeholder="ID / e-posta">
+        </div>
+        <div class="giris-satir">
+          <img src="k2d/sifre.webp" width="55" height="15" alt="Şifre">
+          <input name="password" type="password" required minlength="6" autocomplete="current-password" aria-label="Şifre" placeholder="şifre">
+        </div>
+        <button class="btn-giris" aria-label="Giriş"></button>
+        <div class="giris-alt">
+          <a class="btn-kayit" href="#kayit" aria-label="Kayıt ol"></a>
+          <a class="btn-sifre" href="#sifre" aria-label="Şifremi unuttum"></a>
+        </div>
+      </form>
+      <!-- üye -->
+      <div class="uye-kutu" data-only="uye" hidden>
+        <p>Hoş geldin, <b id="hesap-adi"></b></p>
+        <a class="oyna-kucuk" href="launcher.html">▶ OYUNA GİR</a>
+        <p class="uye-linkler"><a href="#hesap">Hesabım</a> · <a href="#sifre-degis">Şifre</a> · <a href="#" id="cikis">Çıkış</a></p>
+      </div>
+    </aside>
+    <div id="baslik">
+      <a class="bn" href="#anasayfa" aria-label="MineKO — Ana sayfa">
+        <div class="bn-sahne"></div>
+        <div class="bn-bulut b0"></div><div class="bn-bulut b1"></div><div class="bn-bulut b2"></div>
+        <div class="bn-isik bn-altin"></div><div class="bn-isik bn-mavi"></div>
+        <canvas class="bn-fx" aria-hidden="true"></canvas><div class="bn-golge"></div>
+      </a>
+      <img class="serit" src="k2d/serit.webp" width="726" height="49" alt="">
+    </div>
+  </div>
+
+  <div id="govde">
+    <!-- SOL SÜTUN -->
+    <aside id="sol">
+      <section class="nav-kutu">
+        <h2 class="nav1">MENÜ</h2>
+        <ul class="nav2" id="menu">
+          <li><a href="#anasayfa">Ana Sayfa</a></li>
+          <li><a href="launcher.html" class="oyna-link">Oyna (tarayıcıda)</a></li>
+          <li><a href="#siralama">Sıralamalar</a></li>
+          <li><a href="magaza.html" class="oyna-link">Mağaza</a></li>
+          <li><a href="#kurallar">Kurallar</a></li>
+          <li><a href="#iletisim">İletişim</a></li>
+          <li id="gm-menu" hidden><a href="#yonetici" class="gm-link">Yönetici paneli</a></li>
+        </ul>
+      </section>
+
+      <section class="nav-kutu">
+        <h2 class="nav1">SUNUCU</h2>
+        <table class="nav-tablo">
+          <tr><td>Ares</td><td id="b-sunucu">…</td></tr>
+          <tr><td>Oyundakiler</td><td id="b-online" class="kirmizi">0</td></tr>
+          <tr><td>Karakter</td><td>[<span id="b-toplam">…</span>]</td></tr>
+          <tr><td>Karus Char</td><td>[<span id="b-karus">…</span>]</td></tr>
+          <tr><td>Human Char</td><td>[<span id="b-elmo">…</span>]</td></tr>
+        </table>
+      </section>
+
+      <section class="nav-kutu">
+        <h2 class="nav1">SAVAŞ &amp; KRAL</h2>
+        <table class="nav-tablo">
+          <tr><td>Lunar War</td><td class="turuncu">Pz 20:30</td></tr>
+          <tr><td>Delos War</td><td class="turuncu">Pe 21:30</td></tr>
+          <tr><td>Bifrost</td><td class="turuncu">19:00</td></tr>
+          <tr class="baslik-satir"><td class="karus">Karus Kralı</td><td></td></tr>
+          <tr><td colspan="2" id="kral-1" class="kral">—</td></tr>
+          <tr class="baslik-satir"><td class="elmo">Human Kralı</td><td></td></tr>
+          <tr><td colspan="2" id="kral-2" class="kral">—</td></tr>
+        </table>
+      </section>
+
+      <section class="nav-kutu">
+        <h2 class="nav1">ANKET</h2>
+        <div class="nav-metin" id="anket"></div>
+      </section>
+    </aside>
+
+    <!-- İÇERİK -->
+    <main id="orta" tabindex="-1">
+      <div id="flash" class="flash" hidden></div>
+      <div id="icerik"></div>
+    </main>
+  </div>
+
+  <footer id="alt">
+    <div class="alt-ust"></div>
+    <div class="alt-alt"><p class="alt-imza"><b>MineKO</b> Web Edition <span>v1.0.0</span> <i>Original</i></p></div>
+  </footer>
+</div>
+</body>
+</html>

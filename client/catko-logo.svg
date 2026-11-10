@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="CatKo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd28a"/><stop offset="1" stop-color="#e8794a"/></linearGradient>
+  </defs>
+  <path d="M22 18 L42 38 Q60 32 78 38 L98 18 L102 62 Q104 98 60 104 Q16 98 18 62 Z" fill="#17131f" stroke="url(#g)" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M30 34 L38 44 M90 34 L82 44" stroke="url(#g)" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="44" cy="64" rx="7" ry="9" fill="url(#g)"/><ellipse cx="76" cy="64" rx="7" ry="9" fill="url(#g)"/>
+  <ellipse cx="44" cy="64" rx="2.2" ry="7" fill="#17131f"/><ellipse cx="76" cy="64" rx="2.2" ry="7" fill="#17131f"/>
+  <path d="M55 78 L65 78 L60 84 Z" fill="#ff9aa8"/><path d="M60 84 Q56 90 50 88 M60 84 Q64 90 70 88" stroke="url(#g)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M26 74 L8 70 M26 80 L8 84 M94 74 L112 70 M94 80 L112 84" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M60 14 L64 22 L72 23 L66 29 L68 37 L60 33 L52 37 L54 29 L48 23 L56 22 Z" fill="url(#g)" transform="translate(0,-4) scale(1)"/>
+</svg>

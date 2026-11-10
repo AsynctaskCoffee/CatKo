@@ -265,13 +265,13 @@
   var STOCK = null;
   async function stock() {
     if (STOCK) return STOCK; var m = await items(), per = {}, out = [];
-    DEMO_ITEMS.forEach(function (x) { out.push({ num: x.num, price: x.buy_price }); });
+    DEMO_ITEMS.forEach(function (x) { out.push({ num: x.num, price: 0 }); });   // CatKo: market bedava
     var grp = {};
     Array.from(m.values()).filter(function (it) { return !DEMO_BY.has(it.num) && it.item_type === 0 && !/\(\+/.test(it.name) && (+it.req_level || 0) <= 40 && +it.buy_price >= 50 && +it.buy_price <= 90000 && (+it.damage > 0 || +it.ac > 0) && !it.race; })
       .forEach(function (it) { var k = it.kind + ':' + (it.slot || 0), g = (grp[k] = grp[k] || {}); if (!g[it.name]) g[it.name] = it; });
     Object.keys(grp).forEach(function (k) {
       var l = Object.keys(grp[k]).map(function (n) { return grp[k][n]; }).sort(function (a, b) { return (+a.req_level || 0) - (+b.req_level || 0) || a.buy_price - b.buy_price; });
-      var step = Math.max(1, Math.floor(l.length / 4)); for (var i = 0; i < l.length && i < step * 4; i += step) if (out.length < 90) out.push({ num: l[i].num, price: l[i].buy_price });
+      var step = Math.max(1, Math.floor(l.length / 4)); for (var i = 0; i < l.length && i < step * 4; i += step) if (out.length < 90) out.push({ num: l[i].num, price: 0 });
     });
     return (STOCK = out);
   }
@@ -301,5 +301,6 @@
   R.town = R.revive;
   R.regen = function (a, ctx) { var c = chOf(ctx, a.p_char); if (!c || c.dead) return null; stat(c); c.hp = Math.min(c.max_hp, c.hp + Math.ceil(c.max_hp * 0.02)); c.mp = Math.min(c.max_mp, c.mp + Math.ceil(c.max_mp * 0.02)); return out(c); };
   R.dinlen_tick = R.regen;
+  A.OYUN = { chOf: chOf, ACTIVE: function () { return ACTIVE; }, addItem: addItem, items: items, stock: stock, atkOf: atkOf, stat: stat, out: out, giveExp: giveExp, pick: pick, rnd: rnd };
   console.info('%cKO demo oyun mantığı yüklendi (canavar, savaş, loot, envanter)', 'color:#7ad27a');
 })();

@@ -3,7 +3,7 @@
   'use strict';
   if (!window.KO_DEMO) return;
   var A = window.KO_DEMO_API, R = A.RPC, T = A.table;
-  var KARUS = [1, 2, 3, 4, 13], now = function () { return new Date().toISOString(); };
+  var KARUS = [1, 2, 3, 4, 6], now = function () { return new Date().toISOString(); };
 
   var chOf = function (ctx, id) { return T('characters').find(function (c) { return c.id == id && c.owner === ctx.uid; }); };
   var need = function (ctx) { if (!ctx.uid) throw new Error('Oturum yok'); };
