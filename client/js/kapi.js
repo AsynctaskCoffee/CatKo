@@ -26,7 +26,7 @@ const KAPI_BOLGE = {
   ],
 };
 let KAPILAR = KAPI_BOLGE.moradon;
-const UZAK = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones');   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen   // (artık kullanılmıyor: görseller yerel)
+const UZAK = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : (window.KO_DEMO ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones'));   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen   // (artık kullanılmıyor: görseller yerel)
 // KO warpinfo.tbl → npcimg\<ad>.dxt (162×186, altın çerçeveli bölge resmi). Ulusa göre farklı olanlar: Eslant / Eslant Entrance / Lunar Valley (ka_ / el_)
 const WARP_RESIM = {"Moradon": "moradon", "Bellua Village": "velua", "Kalluga Valley": "ka_kaluga", "Raon Camp": "laoncamp", "Ardream": "cultivation_middlelv", "Ronark Land Base": "ronak_base", "Ronark Land": "cultivation", "Luferson Castle": "luperson", "Linate Village": "linate", "Asga Village": "asga", "Doda Camp": "dodacamp", "Kalluga Valley Entrance": "el_kaluga", "El Morad Castle": "elmorad", "Laiba Village": "liva", "Folk Village": "fork_village", "Tale Village": "tail_village", "Delos": "dellos", "Abyss Dungeon": "abyss_of_despair", "Naredis Southeast Fort": "war_d_south", "Naredis Northwest Fort": "war_d_south", "Alseids Plain Combat Area": "battlezone_b_gate", "Nieds Triangle Combat Area": "battlezone_d_gate"};
 const WARP_ULUS = { 'Eslant': ['ka_islant', 'el_islant'], 'Eslant Entrance': ['ka_islant_entrance', 'el_islant_entrance'], 'Lunar Valley': ['ka_infiltration_gate', 'el_infiltration_gate'] };

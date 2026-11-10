@@ -1,6 +1,6 @@
 // KO bölge müzikleri (Zones.tbl sütun 19 → sound.tbl): oyuncunun bulunduğu bölgeye göre arka plan müziği.
 // Dosyalar Supabase Storage'da (zones/muzik/*.ogg, KO Snd klasöründen). Ses düzeyi Seçenekler → Ses (localStorage "ko-ayar").
-const BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones/muzik/' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones/muzik/';   // yerel kurulumda site/zones
+const BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones/muzik/' : (window.KO_DEMO ? './zones/muzik/' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones/muzik/');   // yerel kurulumda site/zones
 // bölge → KO müziği (sound.tbl: 93 21_moradon, 96 71_ronak, 95 1_karus, 94 2_elmolad, 92 75_korowaz, 91 85_chaos, 107 bgm_castle,
 // 20000 bgm_co_town, 20009 fight stadium, 20030 bgm_bifrost, 111000 bgm_ins_81, 35 bgm_login)
 const BOLGE = {

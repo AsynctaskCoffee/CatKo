@@ -45,6 +45,7 @@ function gonder(req, res, dosya, st) {
     res.writeHead(200, { ...baslik, 'Content-Encoding': br ? 'br' : 'gzip', Vary: 'Accept-Encoding', 'Content-Length': cikti.length });
     return req.method === 'HEAD' ? res.end() : res.end(cikti);
   }
+  if (st.size === 0) { res.writeHead(200, { ...baslik, 'Content-Length': 0 }); return res.end(); }   // boş dosya
   let bas = 0, son = st.size - 1, kod = 200;
   const r = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
   if (r && (r[1] || r[2])) {
@@ -69,5 +70,5 @@ http.createServer((req, res) => {
     if (st?.isDirectory()) { res.writeHead(301, { Location: yol.replace(/\/?$/, '/') }); return res.end(); }
     if (!st) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('404 Bulunamadı'); }
     gonder(req, res, dosya, st);
-  } catch { res.writeHead(400); res.end('400'); }
+  } catch (e) { console.error('istek hatası:', req.url, e.message); if (res.headersSent) res.destroy(); else { res.writeHead(400); res.end('400'); } }
 }).listen(PORT, HOST, () => console.log(`KO Web ${dev ? '(dev: client/)' : '(dist/)'} → http://localhost:${PORT}`));

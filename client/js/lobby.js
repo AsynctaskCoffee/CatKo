@@ -30,7 +30,7 @@ const KO_SECIM = {
 const KAM = { pivot: new THREE.Vector3(0, 0.76, -2.72), r: 7.4, h: 0.2, aci: [0, -0.7227, 0.6929], fov: 0.96 * 180 / Math.PI };
 let KO_YER = KO_SECIM[1].yer;
 const kamUlus = (n) => { const k = KO_SECIM[n] || KO_SECIM[1]; KO_YER = k.yer; KAM.pivot.set(...k.pivot); KAM.r = k.r; KAM.aci = k.aci; };
-const REMOTE_ZONES = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones');   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen
+const REMOTE_ZONES = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : (window.KO_DEMO ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones'));   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen
 
 const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export const NATION = { 1: 'Karus', 2: 'El Morad' };

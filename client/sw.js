@@ -3,7 +3,7 @@
 // Tazelik: site dosyaları ko-manifest.json'daki içerik özetiyle (x-ko-h başlığı), Storage dosyaları güncellenme zamanıyla.
 // HTML sayfaları, Supabase REST / RPC / Realtime ve .json Storage dosyaları hiç önbelleğe alınmaz (her zaman ağ).
 const CACHE = 'ko-dosyalar-v1';
-const DEPO = 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones/';
+const DEPO = new URL('zones/', self.location).href;   // demo: site içi ./zones/ (Supabase yok)
 let MAN = null, manV = '', manT = 0, manP = null;
 
 self.addEventListener('install', () => self.skipWaiting());

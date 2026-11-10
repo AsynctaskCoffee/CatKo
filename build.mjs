@@ -25,6 +25,10 @@ for (const f of yürü(OUT)) {
   if (s.includes('__SURUM__')) { writeFileSync(f, s.replaceAll('__SURUM__', surum)); damgali++; }
 }
 
+// 1b) demo: eksik haritalar için düz yedek (gerçek harita dosyası client/zones/<bölge>/ altına konursa o kullanılır)
+import { duzHarita } from './tools-duz-harita.mjs';
+for (const b of ['moradon']) if (duzHarita(join(OUT, 'zones'), b)) console.log(`  düz demo haritası: zones/${b}`);
+
 // 2) manifest
 const files = {};
 const izle = [...yürü(join(OUT, 'assets')), ...yürü(join(OUT, 'js')), ...yürü(join(OUT, 'vendor')), join(OUT, 'client.css')];

@@ -127,7 +127,7 @@ function eslantKapi() {
 }
 // Moradon sitenin içinde gelir; diğer haritalar Supabase Storage'daki "zones" kovasından yüklenir
 const LOCAL_ZONES = new Set();   // Moradon da Storage'da (yeni KO 2369 Moradon haritası, 2026-10)
-const REMOTE_ZONES = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones');   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen
+const REMOTE_ZONES = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? './zones' : (window.KO_DEMO ? './zones' : 'https://vnlevnlsyyqkofnplzdm.supabase.co/storage/v1/object/public/zones'));   // yerel kurulum (localhost): harita dosyaları site/zones klasöründen
 const ASSETS = params.get('assets') || (LOCAL_ZONES.has(HARITA) ? './assets/zones' : REMOTE_ZONES);
 const CHR_ASSETS = params.get('chr') || './assets/chr';
 

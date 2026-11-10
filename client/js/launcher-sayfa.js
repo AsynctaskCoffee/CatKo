@@ -6,7 +6,7 @@ import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { launcherKur, sunucuIzle } from './launcher-ui.js';
 
 const CACHE = 'ko-dosyalar-v1';
-const DEPO = SUPABASE_URL + '/storage/v1/object/public/zones/';
+const DEPO = window.KO_DEMO ? new URL('zones/', location.href).href : SUPABASE_URL + '/storage/v1/object/public/zones/';
 const AYAR_KEY = 'ko-launcher-ayar';
 let ayar = { modeller: true, muzik: true }; try { Object.assign(ayar, JSON.parse(localStorage.getItem(AYAR_KEY) || '{}')); } catch {}
 const ayarKaydet = () => { try { localStorage.setItem(AYAR_KEY, JSON.stringify(ayar)); } catch {} };
