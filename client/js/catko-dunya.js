@@ -214,6 +214,34 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     console.info('[CatKo] Moradon: ' + hc + ' ev');
   }
 
+  // ======================= ULUS KALELERİ (Luferson / El Morad) =======================
+  if (P.castle) {
+    const W = P.walls, kar = zone === 'karus2004', C = kar ? KARUS : ELMO;
+    wallRect(W.x0, W.z0, W.x1, W.z1, W.h, W.t, WALL, W.gaps);
+    for (const [x, z] of [[W.x0, W.z0], [W.x1, W.z0], [W.x1, W.z1], [W.x0, W.z1]]) tower(x, z, 11, 20, STONE, C);
+    for (const [key, list] of Object.entries(W.gaps)) for (const [a, b] of list) for (const e of [a, b]) {
+      const x = key === 's' || key === 'n' ? e : key === 'w' ? W.x0 : W.x1, z = key === 'n' ? W.z0 : key === 's' ? W.z1 : e;
+      tower(x, z, 7, 14, STONE, C); banner(x + (key === 's' || key === 'n' ? 0 : key === 'w' ? 5 : -5), z + (key === 's' ? -5 : key === 'n' ? 5 : 0), C, 13);
+    }
+    // ana kale
+    if (!orj('obj_turkey_castle_t3', P.keep.x, P.keep.z, { ry: Math.PI })) box(P.keep.x, ground(P.keep.x - 30, P.keep.z - 25, P.keep.x + 30, P.keep.z + 25) - 2, P.keep.z, 60, 28, 50, 0xb9b2a3);
+    // ışınlanma kapısı (kale içi): orijinal portal kapısı
+    { const g = P.gates[0]; if (!orj('obj_el_potal_gate_2005', g.x, g.z, { s: 1.4, solid: false })) { const y = H(g.x, g.z); box(g.x - 4.5, y, g.z, 2, 10, 2, STONE); box(g.x + 4.5, y, g.z, 2, 10, 2, STONE); box(g.x, y + 10, g.z, 11, 2, 2, C, false, 0.02); } orj('obj_mora_potal_day_2007', g.x, g.z + 2, { solid: false, sink: -0.05, s: 0.6 }); }
+    if (!orj('obj_turkey_fountain', P.fountain.x, P.fountain.z, { sink: 0.1 })) cyl(P.fountain.x, H(P.fountain.x, P.fountain.z), P.fountain.z, 5, 1.2, STONE, true);
+    // evler
+    const BK = (kar ? ['obj_ka_panhouse01', 'obj_ka_panhouse02', 'obj_ka_panhouse03', 'obj_ka_house03', 'obj_ka_house04', 'obj_mora_bill_004_2007'] : ['obj_el_tonghouse_02', 'obj_el_tonghouse_01', 'obj_el_warehouse02', 'obj_mora_bill_004_2007', 'obj_mora_bill_001_2007', 'obj_mora_pok_bill_03_2007']).filter((a) => O?.var(a));
+    let hc = 0;
+    for (const rc of P.houseRects) for (let x = rc[0] + 16; x < rc[2]; x += 36) for (let z = rc[1] + 16; z < rc[3]; z += 36) {
+      if (!BK.length || R() < 0.12) continue; const ad = BK[(R() * BK.length) | 0], ry = ((R() * 4) | 0) * Math.PI / 2, px = x + (R() - 0.5) * 5, pz = z + (R() - 0.5) * 5, b = O.boyut(ad, ry), r = Math.max(b.w, b.d) / 2;
+      if (![[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].every(([dx, dz]) => free(px + dx, pz + dz, 2, { road: 6, npc: 0 }))) continue;
+      if (Math.abs(px - P.keep.x) < 85 && Math.abs(pz - P.keep.z) < 70) continue;
+      if (orj(ad, px, pz, { ry })) hc++;
+    }
+    // süs: fener, sandık, çit
+    if (O) for (const rd of P.roads.slice(0, 2)) for (let i = 0; i + 1 < rd.length; i++) { const [a, b] = [rd[i], rd[i + 1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = 12; t < L; t += 24) { const x = a[0] + (b[0] - a[0]) * t / L + 4, z = a[1] + (b[1] - a[1]) * t / L; if (free(x, z, 2, { road: 2, stone: false, npc: 0 })) orj(kar ? 'obj_ka_01_lamp' : 'etc_obj_b_el_lamp', x, z, { solid: false }); } }
+    console.info('[CatKo] ' + zone + ': ' + hc + ' ev');
+  }
+
   // ======================= ARDREAM / CZ =======================
   if (zone === 'freezone_a') {
     for (const f of P.forts) {
@@ -260,9 +288,9 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
 
   // ======================= ORTAK: ağaç + kaya =======================
   { let n = 0; const T = P.trees;
-    const AG = (zone === 'moradon' ? ['obj_ka_treea', 'obj_ka_treeb', 'obj_ka_treec', 'obj_ka_treed', 'obj_ka_treee', 'obj_war_tree_out02', 'obj_tree3_yelotree02_s', 'obj_tree3_bud01', 'obj_el_tree_bra']
+    const AG = (zone === 'karus2004' ? ['obj_ka_treea', 'obj_ka_treeb', 'obj_ka_treec', 'obj_ka_treed', 'obj_ka_treee', 'obj_ka_tree_bra', 'obj_ka_tree_brb'] : zone === 'elmo2004' ? ['obj_el_treec', 'obj_el_tree_bra', 'obj_el_tree_fla', 'obj_war_tree_out02', 'obj_tree3_yelotree02_s'] : zone === 'moradon' ? ['obj_ka_treea', 'obj_ka_treeb', 'obj_ka_treec', 'obj_ka_treed', 'obj_ka_treee', 'obj_war_tree_out02', 'obj_tree3_yelotree02_s', 'obj_tree3_bud01', 'obj_el_tree_bra']
       : ['obj_el_treec', 'obj_ka_tree_bra', 'obj_ka_treed', 'obj_ka_treee', 'obj_tree3_smoltree04', 'obj_el_tree_fla', 'obj_ka_tree_brb']).filter((a) => O?.var(a));
-    const AR = (zone === 'moradon' ? ['obj_mora_ston_a', 'obj_war_ston03', 'obj_war_ston02', 'obj_04co_ston_b02'] : ['obj_el_trans_stone2', 'obj_el_trans_stone9', 'obj_el_trans_stone8', 'obj_el_trans_stone6', 'obj_el_trans_stone3']).filter((a) => O?.var(a));
+    const AR = (zone === 'moradon' || P.castle ? ['obj_mora_ston_a', 'obj_war_ston03', 'obj_war_ston02', 'obj_04co_ston_b02'] : ['obj_el_trans_stone2', 'obj_el_trans_stone9', 'obj_el_trans_stone8', 'obj_el_trans_stone6', 'obj_el_trans_stone3']).filter((a) => O?.var(a));
     const NMAX = AG.length ? 650 : 1100, STEP = AG.length ? 16 : 11;
     for (let x = 14; x < WORLD - 10 && n < NMAX; x += STEP) for (let z = 14; z < WORLD - 10 && n < NMAX; z += STEP) {
       const px = x + (R() - 0.5) * 9, pz = z + (R() - 0.5) * 9, forest = fbm(px / 70, pz / 70, P.seed + 3);

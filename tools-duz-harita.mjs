@@ -12,6 +12,8 @@ import { joinDXT, decodeDXT } from './client/js/dxt.js';
 const ORJ_KARO = {
   moradon: [1420, 1432, 1299, 1399, 1478, 1444, null, 738],
   freezone_a: [1749, 1766, 1737, 1414, 1772, 785, null, 738],
+  karus2004: [1420, 1432, 1299, 1399, 1478, 785, null, 738],
+  elmo2004: [1036, 1420, 1299, 1414, 1478, 1444, null, 738],
 };
 let YZ = null;
 function yuzeyKaro(i) {

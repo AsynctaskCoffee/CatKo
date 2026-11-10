@@ -27,7 +27,7 @@ for (const f of yürü(OUT)) {
 
 // 1b) demo: eksik haritalar için düz yedek (gerçek harita dosyası client/zones/<bölge>/ altına konursa o kullanılır)
 import { duzHarita } from './tools-duz-harita.mjs';
-for (const b of ['moradon', 'freezone_a']) if (duzHarita(join(OUT, 'zones'), b)) console.log(`  düz demo haritası: zones/${b}`);
+for (const b of ['moradon', 'freezone_a', 'karus2004', 'elmo2004']) if (duzHarita(join(OUT, 'zones'), b)) console.log(`  düz demo haritası: zones/${b}`);
 
 // 2) manifest
 const files = {};

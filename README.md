@@ -68,3 +68,7 @@ node build.mjs && PORT=8099 node server.mjs
 ## Orijinal şekil kütüphanesi
 
 `client/assets/dunya-kutup/` içindeki orijinal şekil + doku kütüphanesi (kutup.json, sekil/*.bin, doku/*.bin) CatKo dünyasında kullanılır (`js/catko-orj.js`): Moradon'da gerçek ev, sur, çeşme, çadır, ağaç ve kayalar; Ardream'de kale evleri, ağaçlar ve taşlar. Yerleşim (hangi şeklin nerede durduğu) pakette olmadığı için CatKo düzenine göre yerleştirilir. Zemin de orijinal yüzey karolarından (`assets/yuzey`: çim, toprak, Arnavut kaldırımı, kum, kaya, kar) derleme sırasında atlasa çevrilir. Detaylar: bayrak direkleri, pazar çadırları, sandık/fıçı, çim öbekleri, bahçe çitleri, fenerler; Ardream'de çalılar, kemikler, kamp ateşleri ve orijinal taş halkası. Kütüphane yüklenemezse otomatik olarak prosedürel yapılara döner (`?orj=0` ile de kapatılabilir).
+
+## Ulus kaleleri
+
+El Morad Castle (`elmo2004`) ve Luferson Castle (`karus2004`) CatKo düzeniyle eklendi: surlu şehir, orijinal ana kale, evler, çeşme, fenerler, ışınlanma kapısı ve sosyal botlar. Moradon ve Ardream kapılarındaki "El Morad Castle" / "Luferson Castle" seçenekleri (yalnız kendi ulusun) buraya götürür; kale kapısından Moradon ve Ardream'e dönülür. Ronark Land hâlâ kapalı.

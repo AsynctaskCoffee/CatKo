@@ -13,7 +13,8 @@
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var nowS = function () { return Date.now() / 1000; };
 
-  var GATE = { freezone_a: { 1: [840.5, 125.5], 2: [203.8, 907.5] }, moradon: { 1: [797.7, 526.9], 2: [837.4, 526.8] } };
+  var GATE = { freezone_a: { 1: [840.5, 125.5], 2: [203.8, 907.5] }, moradon: { 1: [797.7, 526.9], 2: [837.4, 526.8] }, karus2004: { 1: [512, 690], 2: [512, 690] }, elmo2004: { 1: [512, 690], 2: [512, 690] } };
+  var CASTLE = { karus2004: 1, elmo2004: 1 };
   var ARENAS = [[684, 735, 440, 491], [684, 735, 360, 411]];
   var inRect = function (r, x, z) { return x > r[0] && x < r[1] && z > r[2] && z < r[3]; };
   var NAMES = ['Pamuk', 'Tekir', 'Mirmir', 'Boncuk', 'Minnos', 'Duman', 'Pati', 'Misket', 'Zeytin', 'Tarcin', 'Luna', 'Simba', 'Karamel', 'Cakil', 'Mavis', 'Fistik', 'Pisi', 'Gofret', 'Badem', 'Kasar', 'Sirin', 'Tombik', 'Pelus', 'Findik', 'Kedi_Reis', 'NightPaw', 'IronWhisker', 'PurrKnight', 'MeowMage', 'ShadowTail', 'FuzzyBlade', 'CatNip', 'Bengal', 'Sphynx', 'Ragdoll', 'Siamese'];
@@ -69,6 +70,10 @@
       for (var i = 0; i < 8; i++) { var b = mkBot(W, { name: nm(), nation: 1 + (i % 2), level: lvl(), role: 'merchant', x: 800 + (i % 4) * 11, z: 556 + Math.floor(i / 4) * 12 }); b.stall = i; }
       // sosyal gezginler
       for (var j = 0; j < 7; j++) mkBot(W, { name: nm(), nation: 1 + (j % 2), level: lvl(), role: 'social', x: rnd(790, 850), z: rnd(500, 545), home: [rnd(785, 855), rnd(495, 545)] });
+    } else if (CASTLE[zone]) {
+      // ulus kalesi: sosyal gezginler (kendi ulusundan), dost ortam
+      var nat = zone === 'karus2004' ? 1 : 2;
+      for (var k = 0; k < 12; k++) mkBot(W, { name: nm(), nation: nat, level: lvl(), role: 'social', x: rnd(470, 560), z: rnd(500, 640), home: [rnd(450, 580), rnd(480, 660)] });
     } else if (zone === 'freezone_a') {
       // CZ: her ulustan 9 bot — gruplar halinde devriye, kovalama, kaçma, pot, diriliş
       [1, 2].forEach(function (n) { for (var i = 0; i < 9; i++) { var g = GATE.freezone_a[n]; mkBot(W, { name: nm(), nation: n, level: lvl(), role: 'cz', x: g[0] + rnd(-12, 12), z: g[1] + (n === 1 ? 1 : -1) * rnd(6, 16), home: g }); } });
@@ -245,7 +250,7 @@
   // ---------------------------------------------------------------- başlatma: oyuncu bölge kanalına katılınca
   HUB.onsub.push(function (topic) {
     var m = /^bolge:([a-z_0-9]+):k1$/.exec(topic); if (!m || worlds[m[1]] || OFF) return;
-    if (m[1] !== 'moradon' && m[1] !== 'freezone_a') return;
+    if (m[1] !== 'moradon' && m[1] !== 'freezone_a' && !CASTLE[m[1]]) return;
     var zone = m[1], tries = 0, iv = setInterval(function () {
       tries++; if (tries > 200) return clearInterval(iv);
       if (window.__ko && window.__ko.player && window.__koYuklendi !== false && charRow()) { clearInterval(iv); startWorld(zone); }
@@ -311,14 +316,27 @@
   };
 
   // ---------------------------------------------------------------- Işınlanma (kapılar bedava; haritalar: Moradon + Ardream/CZ)
-  var DEST = { moradon: ['moradon', 'Moradon'], folk: ['moradon', 'Moradon'], ardream: ['freezone_a', 'Ardream (CZ)'] };
+  var DEST = { moradon: ['moradon', 'Moradon'], folk: ['moradon', 'Moradon'], ardream: ['freezone_a', 'Ardream (CZ)'], elmo: ['elmo2004', 'El Morad Castle'], luferson: ['karus2004', 'Luferson Castle'] };
   R.warp_git = function (a, ctx) {
     var c = O.chOf(ctx, a.p_char), d = DEST[a.p_hedef]; if (!c) return { ok: false, mesaj: 'Karakter yok' };
     if (!d) return { ok: false, mesaj: 'Bu bölge CatKo demo haritasında yok. Moradon ve Ardream (CZ) açık.' };
-    var g = (GATE[d[0]] || GATE.moradon)[c.nation], x = g[0] + (d[0] === 'freezone_a' ? (c.nation === 1 ? 5 : -5) : 0), z = g[1] + (d[0] === 'freezone_a' ? (c.nation === 1 ? 8 : -8) : 6);
+    var g = (GATE[d[0]] || GATE.moradon)[c.nation], x = g[0] + (d[0] === 'freezone_a' ? (c.nation === 1 ? 5 : -5) : 0), z = g[1] + (d[0] === 'freezone_a' ? (c.nation === 1 ? 8 : -8) : CASTLE[d[0]] ? -14 : 6);
+    if ((d[0] === 'elmo2004' && c.nation !== 2) || (d[0] === 'karus2004' && c.nation !== 1)) return { ok: false, mesaj: 'Sadece kendi ulusunun kalesine girebilirsin.' };
     c.zone = d[0]; c.x = x; c.z = z; ctx.save();
     return { ok: true, zone: d[0], ad: d[1], ucret: 0, x: x, z: z, gold: c.gold };
   };
+  // ulus kalesi kapıları (kapi_nokta / kapi_warp tabloları + kapi_git)
+  var WARPS = [
+    { id: 1, zone: 'karus2004', grup: 1, ad: 'Moradon', ucret: 0, kilit: null, seviye_min: 1, seviye_max: 83, hedef_zone: 'moradon', key: 'moradon' },
+    { id: 2, zone: 'karus2004', grup: 1, ad: 'Ardream', ucret: 0, kilit: null, seviye_min: 30, seviye_max: 83, hedef_zone: 'freezone_a', key: 'ardream' },
+    { id: 3, zone: 'karus2004', grup: 1, ad: 'Ronark Land', ucret: 0, kilit: 'kapali', seviye_min: 60, seviye_max: 83, hedef_zone: null },
+    { id: 11, zone: 'elmo2004', grup: 1, ad: 'Moradon', ucret: 0, kilit: null, seviye_min: 1, seviye_max: 83, hedef_zone: 'moradon', key: 'moradon' },
+    { id: 12, zone: 'elmo2004', grup: 1, ad: 'Ardream', ucret: 0, kilit: null, seviye_min: 30, seviye_max: 83, hedef_zone: 'freezone_a', key: 'ardream' },
+    { id: 13, zone: 'elmo2004', grup: 1, ad: 'Ronark Land', ucret: 0, kilit: 'kapali', seviye_min: 60, seviye_max: 83, hedef_zone: null },
+  ];
+  A.VIRTUAL.kapi_nokta = async function () { return [{ id: 1, zone: 'karus2004', grup: 1, x: 512, y: 0, z: 690 }, { id: 2, zone: 'elmo2004', grup: 1, x: 512, y: 0, z: 690 }]; };
+  A.VIRTUAL.kapi_warp = async function () { return WARPS.map(function (w) { return Object.assign({}, w); }); };
+  R.kapi_git = function (a, ctx) { var w = WARPS.find(function (x) { return x.id === a.p_warp; }); if (!w || !w.key) return { ok: false, mesaj: 'Bu geçit kapalı.' }; return R.warp_git({ p_char: a.p_char, p_hedef: w.key }, ctx); };
   var oldRevive = R.revive;
   R.revive = function (a, ctx) {
     var c = O.chOf(ctx, a.p_char); if (c && c.zone === 'freezone_a') {
