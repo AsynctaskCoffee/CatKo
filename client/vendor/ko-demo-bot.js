@@ -122,6 +122,7 @@
   function respawn(W, b) {
     var g = b.home || (W.zone === 'moradon' && b.role === 'duel' ? null : gateOf(W, b.nation));
     if (g) { b.x = g[0] + rnd(-6, 6); b.z = g[1] + rnd(-6, 6); } else { var r = ARENAS[b.arena]; b.x = rnd(r[0] + 8, r[1] - 8); b.z = rnd(r[2] + 8, r[3] - 8); }
+    if (window.KO_WORLD && window.KO_WORLD.zone === W.zone && window.KO_WORLD.blocked(b.x, b.z, 1)) unstick(window.KO_WORLD, b);
     b.dead = false; b.hp = b.max_hp; b.mode = 'idle'; b.goal = null; b.tgt = null; b.potT = 0;
     E(W, 'anim', { id: String(b.id), n: 'stopx' }); sendPos(W, b); sendHp(W, b);
   }
@@ -193,6 +194,12 @@
     b.potT = now + 18; b.hp = Math.min(b.max_hp, b.hp + b.max_hp * 0.45); sendHp(W, b);
     if (Math.random() < 0.2) say(W, b, 'Pot!');
   }
+  function unstick(Wd, b) {
+    for (var r = 2; r <= 40; r += 2) for (var a = 0; a < 8; a++) {
+      var x = b.x + Math.cos(a * 0.785) * r, z = b.z + Math.sin(a * 0.785) * r;
+      if (!Wd.blocked(x, z, 1.0)) { b.x = x; b.z = z; return; }
+    }
+  }
   function step(W, b, P, now, dt) {
     if (b.dead) { if (now > b.respT) respawn(W, b); return; }
     if (now - b.hitT > 8 && b.hp < b.max_hp) b.hp = Math.min(b.max_hp, b.hp + b.max_hp * 0.015 * dt);
@@ -210,7 +217,16 @@
       var dx = gx - b.x, dz = gz - b.z, dist = Math.hypot(dx, dz);
       if (dist > stop) {
         var sp = b.run ? 6.2 : 3.0, st = Math.min(sp * dt, dist - stop);
-        b.x += dx / dist * st; b.z += dz / dist * st; b.vx = dx / dist * sp; b.vz = dz / dist * sp;
+        var mx = dx / dist * st, mz = dz / dist * st, Wd = window.KO_WORLD, ok = true;
+        if (Wd && Wd.zone === W.zone) {
+          if (Wd.blocked(b.x, b.z, 0.3)) { unstick(Wd, b); }
+          if (!Wd.blocked(b.x + mx, b.z + mz)) { b.x += mx; b.z += mz; }
+          else if (!Wd.blocked(b.x + mx, b.z)) { b.x += mx; }
+          else if (!Wd.blocked(b.x, b.z + mz)) { b.z += mz; }
+          else { ok = false; b.stuck = (b.stuck || 0) + 1; if (b.stuck > 6) { b.stuck = 0; b.goal = null; if (b.tgt && Math.random() < 0.5) b.tgt = null; } }
+          if (ok) b.stuck = 0;
+        } else { b.x += mx; b.z += mz; }
+        b.vx = ok ? dx / dist * sp : 0; b.vz = ok ? dz / dist * sp : 0;
         if (!b.tgt) b.yaw = Math.atan2(dx, dz);
       }
     }

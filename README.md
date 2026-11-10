@@ -43,3 +43,13 @@ Dokunmatik cihazlarda (telefon/tablet) otomatik "mobil mod" açılır (`?mobil=0
 - Sağ altta ⚔ (saldır), Z (hedef), 1-4 (kısayol çubuğu); üstte 🎒 çanta, 💬 sohbet, H menü, Esc, tam ekran, arayüzü gizle.
 - Arayüz (HUD) ekran boyutuna göre ölçeklenir; küçük ekranda sohbet/mesaj panelleri 💬 ile açılır.
 - Ana sayfa duyarlı; PWA bildirimi (manifest) ile ana ekrana eklenip tam ekran açılabilir.
+
+## Harita / dünya (prosedürel)
+
+Orijinal arazi, kale ve bina verileri pakette yoktu; bu yüzden CatKo kendi dünyasını üretir:
+
+- `client/js/catko-plan.js` — Moradon ve Ardream (CZ) için ortak plan (yükseklik, göl/nehir, yol, taş/kum karoları).
+- `tools-duz-harita.mjs` — derleme sırasında arazi (`terrain.bin`) ve doku atlası üretir.
+- `client/js/catko-dunya.js` — çalışma anında surlar, kuleler, evler, kale, warp kapıları, çeşme, arena, ağaç/kaya ve çarpışma ağı kurar; `window.KO_WORLD.solids` botlar tarafından kullanılır (duvardan geçmezler).
+
+Moradon: surlu şehir + iki arena + warp kapıları. Ardream: iki ulusun kalesi, orta anıt, gözetleme kuleleri, harabeler. Diğer bölgeler (Elmorad, Luferson vb.) henüz yok.
