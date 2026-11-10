@@ -39,7 +39,7 @@
     if (!T.giris_duyuru.length) T.giris_duyuru.push({ id: 1, sira: 1, baslik: 'KO Web Demo', metin: 'Bu sürüm Supabase olmadan, tarayıcı içi demo modunda çalışır. Veriler yalnızca bu tarayıcıda saklanır.' });
   }
   var saveT = null;
-  function save() { try { ls.setItem(DBK, JSON.stringify(DB)); } catch (e) { warn('kayıt başarısız', e); } }
+  function save() { try { ls.setItem(DBK, JSON.stringify(DB, function (k, v) { return k === 'mob_instances' ? undefined : v; })); } catch (e) { warn('kayıt başarısız', e); } }
   load();
   window.KO_DEMO_RESET = function () { try { ls.removeItem(DBK); ls.removeItem('ko-demo-oturum'); } catch (e) {} location.reload(); };
   var table = function (n) { return (DB.tables[n] = DB.tables[n] || []); };
@@ -92,7 +92,8 @@
     };
   }
   var VIRTUAL = {};   // tablo adı → async () => satırlar (assets'ten gelen salt-okunur veri)
-  var FK = { 'inventory.items': ['item_num', 'items', 'num'] };
+  var FK = { 'inventory.items': ['item_num', 'items', 'num'], 'mob_instances.monsters': ['sid', 'monsters', 'sid'], 'spawners.monsters': ['sid', 'monsters', 'sid'] };
+  var allRows = async function (n) { return n === 'items' ? Array.from((await itemsLoad()).values()) : VIRTUAL[n] ? (await VIRTUAL[n]()) : table(n); };
 
   function Query(tname) {
     var q = { t: tname, mode: 'select', filters: [], order: [], lim: null, rng: null, single: null, payload: null, count: null, head: false, sel: '*', ret: false, onConflict: null };
@@ -143,6 +144,7 @@
   async function run(q) {
     try {
       await wait(0);
+      if (window.KO_DEMO_API.hooks[q.t]) await window.KO_DEMO_API.hooks[q.t]();
       var rows;
       if (q.t === 'items') { var im = await itemsLoad(); rows = null; }
       if (q.mode === 'select') {
@@ -153,11 +155,11 @@
         q.order.forEach(function (o) { }); for (var i = q.order.length - 1; i >= 0; i--) (function (o) { rows.sort(function (a, b) { var x = getv(a, o[0]), y = getv(b, o[0]); return (x > y ? 1 : x < y ? -1 : 0) * (o[1] ? 1 : -1); }); })(q.order[i]);
         var total = rows.length;
         if (q.rng) rows = rows.slice(q.rng[0], q.rng[1] + 1); else if (q.lim != null) rows = rows.slice(0, q.lim);
-        // ilişkiler
+        // ilişkiler: select('*, monsters(*)') → ilişkili satır gömülür
         var re = /([a-z_]+)(?:!inner)?\(([^)]*)\)/g, mm;
         while ((mm = re.exec(q.sel || ''))) {
-          var rel = mm[1], fk = null; Object.keys(FK).forEach(function (k) { if (k.split('.')[1] === rel && k.split('.')[0] === q.t) fk = FK[k]; });
-          if (fk) { var tm = fk[1] === 'items' ? await itemsLoad() : null; rows = rows.map(function (r) { var c = Object.assign({}, r); c[rel] = tm ? (tm.get(r[fk[0]]) || null) : null; return c; }); }
+          var rel = mm[1], fk = FK[q.t + '.' + rel];
+          if (fk) { var idx = new Map((await allRows(fk[1])).map(function (x) { return [x[fk[2]], x]; })); rows = rows.map(function (r) { var c = Object.assign({}, r); c[rel] = idx.get(r[fk[0]]) || null; return c; }); }
         }
         rows = clone(rows);
         if (q.head) return { data: null, error: null, count: total };
@@ -170,15 +172,15 @@
           if (q.mode === 'upsert') {
             var keys = (q.onConflict || 'id').split(',').map(function (s) { return s.trim(); });
             var ex = T.find(function (r) { return keys.every(function (k) { return r[k] != null && r[k] == p[k]; }); });
-            if (ex) { Object.assign(ex, p); res.push(ex); return; }
+            if (ex) { var o0 = clone(ex); Object.assign(ex, p); res.push(ex); notify(q.t, 'UPDATE', ex, o0); return; }
           }
           if (p.id == null && q.t !== 'profiles' && q.t !== 'gms') p.id = nextId(q.t);
-          T.push(p); res.push(p);
+          T.push(p); res.push(p); notify(q.t, 'INSERT', p, null);
         });
       } else if (q.mode === 'update') {
-        T.forEach(function (r) { if (q.filters.every(function (f) { return f(r); })) { Object.assign(r, clone(q.payload)); res.push(r); } });
+        T.forEach(function (r) { if (q.filters.every(function (f) { return f(r); })) { var o1 = clone(r); Object.assign(r, clone(q.payload)); res.push(r); notify(q.t, 'UPDATE', r, o1); } });
       } else if (q.mode === 'delete') {
-        DB.tables[q.t] = T.filter(function (r) { if (q.filters.every(function (f) { return f(r); })) { res.push(r); return false; } return true; });
+        DB.tables[q.t] = T.filter(function (r) { if (q.filters.every(function (f) { return f(r); })) { res.push(r); notify(q.t, 'DELETE', null, r); return false; } return true; });
         if (q.t === 'characters') res.forEach(function (c) { DB.tables.inventory = table('inventory').filter(function (i) { return i.char_id !== c.id; }); });
       }
       save();
@@ -244,7 +246,7 @@
 
   // ---------------------------------------------------------------- RPC
   var RPC = (window.KO_DEMO_RPC = {});
-  window.KO_DEMO_API = { DB: function () { return DB; }, save: save, table: table, nextId: nextId, itemsLoad: itemsLoad, VIRTUAL: VIRTUAL, RPC: RPC, clone: clone, base: base, warn: warn };
+  window.KO_DEMO_API = { hooks: {}, notify: function () { return notify.apply(null, arguments); }, allRows: function (n) { return allRows(n); }, DB: function () { return DB; }, save: save, table: table, nextId: nextId, itemsLoad: itemsLoad, VIRTUAL: VIRTUAL, RPC: RPC, clone: clone, base: base, warn: warn };
   function mkRpc(auth) {
     return function (name, args) {
       args = args || {};
@@ -260,10 +262,25 @@
     };
   }
 
-  // ---------------------------------------------------------------- realtime (tek oyunculu, sessiz)
+  // ---------------------------------------------------------------- realtime (yerel): postgres_changes + broadcast
+  var PG = [];   // {event, table, filter(fn), cb}
+  function notify(tbl, type, nw, old) {
+    PG.slice().forEach(function (l) {
+      if (l.table !== tbl && l.table !== '*') return; if (l.event !== '*' && l.event !== type) return;
+      var row = nw || old; if (l.filter && !l.filter(row)) return;
+      setTimeout(function () { try { l.cb({ schema: 'public', table: tbl, eventType: type, new: nw ? clone(nw) : {}, old: old ? clone(old) : {}, commit_timestamp: new Date().toISOString() }); } catch (e) { console.error(e); } }, 0);
+    });
+  }
   function mkChannel(name) {
-    var ch = { topic: name, state: 'joined' };
-    ch.on = function () { return ch; };
+    var ch = { topic: name, state: 'joined' }, bc = [];
+    ch.on = function (kind, cfg, cb) {
+      if (kind === 'postgres_changes' && cfg && cb) {
+        var f = null, m = cfg.filter && /^([a-z_]+)=eq\.(.*)$/.exec(cfg.filter);
+        if (m) f = function (r) { return r && String(r[m[1]]) === m[2]; };
+        PG.push({ event: cfg.event || '*', table: cfg.table || '*', filter: f, cb: cb });
+      } else if (kind === 'broadcast' && cb) bc.push({ ev: cfg && cfg.event, cb: cb });
+      return ch;
+    };
     ch.subscribe = function (cb) { if (cb) setTimeout(function () { cb('SUBSCRIBED'); }, 0); return ch; };
     ch.unsubscribe = async function () { return 'ok'; };
     ch.send = async function () { return 'ok'; };

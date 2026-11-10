@@ -20,4 +20,7 @@ Varsayılan olarak oyun hiçbir dış sunucuya bağlanmaz: `client/vendor/ko-dem
 Moradon haritası üretir. Gerçek harita dosyaları `client/zones/<bölge>/` altına konursa onlar kullanılır.
 - Gerçek Supabase'e dönmek: adrese `?gercek=1` ekle (veya `localStorage.setItem('ko-gercek','1')`)
 - Demo verisini sıfırlamak: konsolda `KO_DEMO_RESET()`
+- Demo arka ucu `vendor/ko-demo-oyun.js`: gerçek canavar/spawn/drop verisi (assets/mob-db), eşyalar (assets/esya), görevler (assets/gorev) ile
+  savaş, exp/seviye, loot, envanter/kuşanma, iksirler, mağaza (shop_list/buy/sell), görevler (al/öldürme sayacı/teslim), beceriler (skill_use).
+  Canavarlar seviyeye göre başlangıç noktası çevresinde halkalar halinde doğar (düşük seviye yakın). Yalnızca tek oyunculu.
 - Eksik RPC'leri görmek: `localStorage.setItem('ko-demo-log','1')`
