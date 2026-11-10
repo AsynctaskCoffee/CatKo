@@ -73,6 +73,14 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     // beşik çatı: uzun eksen boyunca; PYR yerine iki eğik düzlem yerine basit piramit çatı
     addGeo(PYR, x, g + h + 1.6, z, { ry: Math.PI / 4, sx: Math.max(w, d) * 0.78, sy: 3.4, sz: Math.max(w, d) * 0.78, color: roofC, solid: false });
     box(faceX ? x + (w / 2 + 0.05) * Math.sign(faceX) : x, g, faceX ? z : z + d / 2 + 0.05, faceX ? 0.2 : 1.6, 2.4, faceX ? 1.6 : 0.2, 0x3b2a1a, false);   // kapı
+    // pencereler (ön/arka/yan), ahşap kirişler, baca
+    for (const sx of [-1, 1]) for (const k of [-0.28, 0.28]) {
+      box(x + k * w, g + h * 0.55, z + sx * (d / 2 + 0.06), 1.1, 1.1, 0.14, 0xf0c060, false, 0.02);
+      box(x + k * w, g + h * 0.55, z + sx * (d / 2 + 0.03), 1.5, 1.5, 0.1, 0x4a3422, false, 0);
+    }
+    for (const sx of [-1, 1]) box(x + sx * (w / 2 + 0.06), g + h * 0.55, z, 0.14, 1.1, 1.1, 0xf0c060, false, 0.02);
+    box(x, g + h - 0.35, z, w + 0.3, 0.5, d + 0.3, 0x5a3f28, false, 0);   // üst kiriş
+    box(x + w * 0.28, g + h + 2.2, z - d * 0.2, 1.1, 3, 1.1, 0x7a6a5a, false);   // baca
   }
   function pine(x, z, s) {
     const g = H(x, z); cyl(x, g - 0.5, z, 0.35 * s, 3 * s, 0x5a3b22);
@@ -101,7 +109,7 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     return true;
   };
 
-  const WALL = 0x8a8478, STONE = 0x9a958a, DARK = 0x6b665e;
+  const WALL = 0xb4aa98, STONE = 0xc2baa8, DARK = 0x8a8478;
   const stucco = [0xe6d9b8, 0xd8c9a2, 0xcfd6c0, 0xe0c9b0, 0xdcdcd0], roofs = [0x8b3a2e, 0x6a4a3a, 0x3f5f8a, 0x7a3a3a, 0x4a6a4a];
 
   // ======================= MORADON =======================
@@ -144,6 +152,13 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     // gerçek NPC konumlarına göre: han, demirci, dükkânlar (NPC'nin arkasında), kahramanlar heykeli
     for (const [x, z, w, dd, h] of P.landmarks || []) if (free(x, z, 3, { road: 3, stone: false, npc: 4 })) house(x, z, w, dd, h, 0xd9c7a0, 0x8b3a2e, 0);
     for (const [x, z] of P.statues || []) { const y = H(x, z); cyl(x, y, z, 2.2, 1.2, STONE, true); cyl(x, y + 1.2, z, 0.9, 5, 0xb8b2a4); addGeo(ICO, x, y + 6.6, z, { sx: 1.3, sy: 1.6, sz: 1.3, color: x < 817 ? KARUS : ELMO }); }
+    // pazar tezgâhları (meydanın kenarları; NPC'lerden uzak)
+    { const awn = [0xb5342b, 0x2f5fb8, 0xd8a030, 0x3a8a4a]; let ti = 0;
+      for (const [x, z] of [[748, 566], [748, 586], [866, 566], [866, 586], [800, 600], [834, 600], [748, 606], [866, 606]]) {
+        if (!free(x, z, 1, { road: 1, stone: false, npc: 3 })) continue; const y = H(x, z), c = awn[ti++ % 4];
+        box(x, y, z, 4, 1.2, 2, 0x7a5a3a, true); box(x - 1.8, y + 1.2, z - 0.9, 0.2, 2, 0.2, 0x5a3f28, false); box(x + 1.8, y + 1.2, z - 0.9, 0.2, 2, 0.2, 0x5a3f28, false);
+        box(x, y + 3.2, z - 0.3, 4.6, 0.25, 2.8, c, false, 0.03); box(x, y + 1.2, z, 3, 0.5, 1.4, 0xd9b870, false);
+      } }
     // sokak fenerleri (yollar boyunca)
     for (const rd of P.roads.slice(0, 4)) for (let i = 0; i + 1 < rd.length; i++) { const [a, b] = [rd[i], rd[i + 1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = 8; t < L; t += 16) { const x = a[0] + (b[0] - a[0]) * t / L + 3.5, z = a[1] + (b[1] - a[1]) * t / L; if (!free(x, z, 2, { road: 2, stone: false })) continue; const y = H(x, z); cyl(x, y, z, 0.18, 4, 0x3a3a3a); addGeo(ICO, x, y + 4.3, z, { sx: 0.45, sy: 0.45, sz: 0.45, color: 0xffd070, jit: 0 }); } }
     console.info('[CatKo] Moradon: ' + hc + ' ev');
