@@ -53,3 +53,14 @@ Orijinal arazi, kale ve bina verileri pakette yoktu; bu yüzden CatKo kendi dün
 - `client/js/catko-dunya.js` — çalışma anında surlar, kuleler, evler, kale, warp kapıları, çeşme, arena, ağaç/kaya ve çarpışma ağı kurar; `window.KO_WORLD.solids` botlar tarafından kullanılır (duvardan geçmezler).
 
 Moradon: surlu şehir + iki arena + warp kapıları. Ardream: iki ulusun kalesi, orta anıt, gözetleme kuleleri, harabeler. Diğer bölgeler (Elmorad, Luferson vb.) henüz yok.
+
+## Yerel orijinal arazi (isteğe bağlı, yayına girmez)
+
+Kendi bilgisayarında, sahip olduğun orijinal istemciden arazi yüksekliğini denemek istersen:
+
+```
+node tools/ko-import.mjs <Data/moradon.gtd> moradon
+node build.mjs && PORT=8099 node server.mjs
+```
+
+Çıktı `client/zones/<bölge>/` altına yazılır; bu klasör `.gitignore`'dadır, yani **repoya ve GitHub Pages'e girmez**. Yalnızca arazi okunur (karo dokuları CatKo atlasına indirilir, bina/sur nesneleri dönüştürülmez). Orijinal veriyi yayınlamak telif nedeniyle önerilmez. Yayındaki sürüm CatKo'nun kendi prosedürel dünyasını kullanır.

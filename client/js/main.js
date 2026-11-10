@@ -1058,7 +1058,7 @@ $('mini-dot').addEventListener('click', (e) => {
       }
     } catch (e) { console.warn('nesneler yüklenemedi', e); }
     // CatKo: gerçek nesne verisi yoksa prosedürel kale / bina / ağaç dünyası (çarpışmalı)
-    if (!state.objects) { try { status('Building world…', 0.78); const m = await import('./catko-dunya.js'); await m.dunyaKur({ THREE, zone: ZONE, world, state, Collision, base: '' }); } catch (e) { console.warn('catko dünya', e); } }
+    if (!state.objects && !z.meta?.yerelOrijinal) { try { status('Building world…', 0.78); const m = await import('./catko-dunya.js'); await m.dunyaKur({ THREE, zone: ZONE, world, state, Collision, base: '' }); } catch (e) { console.warn('catko dünya', e); } }
     // karakter modelleri (dönüştürülmüşse)
     try {
       status('Loading character…', 0.8);
