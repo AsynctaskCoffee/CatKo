@@ -89,6 +89,7 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     side(z0, x0, x1, true, 'n'); side(z1, x0, x1, true, 's'); side(x0, z0, z1, false, 'w'); side(x1, z0, z1, false, 'e');
   }
   function banner(x, z, color, h = 12) {
+    if (O && orj(color === KARUS ? 'flagpole_ka_01_2006' : 'flagpole_el_01_2006', x, z, { solid: false })) return;
     const g = H(x, z); box(x, g, z, 0.5, h, 0.5, 0x4a3a2a, false); box(x + 1.6, g + h - 3.2, z, 3, 3.4, 0.2, color, false, 0.02);
   }
   function house(x, z, w, d, h, wallC, roofC, faceX) {
@@ -188,16 +189,26 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
     (P.landmarks || []).forEach(([x, z, w, dd, h], i) => {
       const ad = LM[i % LM.length], b = O?.boyut(ad, 0), r = b ? Math.max(b.w, b.d) / 2 : 0;
       if (b && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].every(([dx, dz]) => free(x + dx, z + dz, 2, { road: 3, stone: false, npc: 3 })) && orj(ad, x, z)) return;
-      if (free(x, z, 3, { road: 3, stone: false, npc: 4 })) house(x, z, w, dd, h, 0xd9c7a0, 0x8b3a2e, 0);
+      if (!O && free(x, z, 3, { road: 3, stone: false, npc: 4 })) house(x, z, w, dd, h, 0xd9c7a0, 0x8b3a2e, 0);
     });
     for (const [x, z] of P.statues || []) { const y = H(x, z); cyl(x, y, z, 2.2, 1.2, STONE, true); cyl(x, y + 1.2, z, 0.9, 5, 0xb8b2a4); addGeo(ICO, x, y + 6.6, z, { sx: 1.3, sy: 1.6, sz: 1.3, color: x < 817 ? KARUS : ELMO }); }
     // pazar tezgâhları (meydanın kenarları; NPC'lerden uzak)
     { const awn = [0xb5342b, 0x2f5fb8, 0xd8a030, 0x3a8a4a]; let ti = 0;
       for (const [x, z] of [[748, 566], [748, 586], [866, 566], [866, 586], [800, 600], [834, 600], [748, 606], [866, 606]]) {
-        if (!free(x, z, 1, { road: 1, stone: false, npc: 3 })) continue; const y = H(x, z), c = awn[ti++ % 4];
+        if (!free(x, z, 1, { road: 1, stone: false, npc: 3 })) continue;
+        if (O && orj(ti++ % 2 ? 'obj_04ka_gisatent01' : 'obj_04el_gisatent01', x, z, { ry: x < 817 ? Math.PI / 2 : -Math.PI / 2, s: 0.55 })) { orj(R() < 0.5 ? 'obj_turkey_box22' : 'cw_fort_barrel02', x + (x < 817 ? 4 : -4), z + 3, { solid: false }); continue; }
+        const y = H(x, z), c = awn[ti % 4];
         box(x, y, z, 4, 1.2, 2, 0x7a5a3a, true); box(x - 1.8, y + 1.2, z - 0.9, 0.2, 2, 0.2, 0x5a3f28, false); box(x + 1.8, y + 1.2, z - 0.9, 0.2, 2, 0.2, 0x5a3f28, false);
         box(x, y + 3.2, z - 0.3, 4.6, 0.25, 2.8, c, false, 0.03); box(x, y + 1.2, z, 3, 0.5, 1.4, 0xd9b870, false);
       } }
+    if (O) {
+      for (const g of P.gates) orj('obj_mora_potal_day_2007', g.x, g.z + 4, { solid: false, sink: -0.05, s: 0.6 });
+      const CIM = ['obj_mora_gass_puls_01_2007', 'obj_mora_grass_a03', 'obj_mora_grass_a01', 'obj_mora_grass001_2007'].filter((a) => O.var(a));
+      for (let i = 0, k = 0; k < 260 && i < 4000 && CIM.length; i++) { const x = P.walls.x0 + 8 + R() * (P.walls.x1 - P.walls.x0 - 16), z = P.walls.z0 + 8 + R() * (P.walls.z1 - P.walls.z0 - 16); if (!free(x, z, 2, { road: 4, npc: 2 })) continue; O.put(CIM[(R() * CIM.length) | 0], x, z, { ry: R() * 6.28, y: H(x, z) - 0.05 }); k++; }
+      const ESYA = ['obj_turkey_box11', 'obj_turkey_box22', 'cw_fort_barrel01', 'cw_fort_barrel02', 'obj_mora_big_soil_box_yellow_2007'].filter((a) => O.var(a));
+      for (let i = 0, k = 0; k < 70 && i < 2000 && ESYA.length; i++) { const x = P.walls.x0 + 8 + R() * (P.walls.x1 - P.walls.x0 - 16), z = P.walls.z0 + 8 + R() * (P.walls.z1 - P.walls.z0 - 16); if (!free(x, z, 2, { road: 3, npc: 3 }) || !inSolid(x, z, 9)) continue; orj(ESYA[(R() * ESYA.length) | 0], x, z, { ry: ((R() * 4) | 0) * Math.PI / 2 }); k++; }   // bina kenarlarına
+      for (let i = 0, k = 0; k < 90 && i < 2000; i++) { const x = P.walls.x0 + 6 + R() * (P.walls.x1 - P.walls.x0 - 12), z = P.walls.z0 + 6 + R() * (P.walls.z1 - P.walls.z0 - 12); if (!free(x, z, 1, { road: 2, npc: 2 }) || inSolid(x, z, 6) || !inSolid(x, z, 14)) continue; O.put('obj_mora_fence', x, z, { ry: ((R() * 4) | 0) * Math.PI / 2, y: H(x, z) - 0.05 }); k++; }   // bahçe çitleri
+    }
     // sokak fenerleri (yollar boyunca)
     for (const rd of P.roads.slice(0, 4)) for (let i = 0; i + 1 < rd.length; i++) { const [a, b] = [rd[i], rd[i + 1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = 8; t < L; t += 16) { const x = a[0] + (b[0] - a[0]) * t / L + 3.5, z = a[1] + (b[1] - a[1]) * t / L; if (!free(x, z, 2, { road: 2, stone: false })) continue; if (O && orj('obj_mora_light', x, z, { solid: false })) continue; const y = H(x, z); cyl(x, y, z, 0.18, 4, 0x3a3a3a); addGeo(ICO, x, y + 4.3, z, { sx: 0.45, sy: 0.45, sz: 0.45, color: 0xffd070, jit: 0 }); } }
     console.info('[CatKo] Moradon: ' + hc + ' ev');
@@ -222,12 +233,21 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
       if (O) for (const [dx, dz, ad] of [[-14, 8, 'obj_ka_panhouse02'], [10, -14, 'obj_el_tonghouse_02'], [-6, -16, 'obj_el_tonghouse_01']]) orj(ad, f.x + (f.nation === 2 ? dx : -dx), f.z + (f.nation === 2 ? dz : -dz), { ry: ((dx + dz) & 3) * Math.PI / 2 });
       banner(f.x + (f.nation === 2 ? 10 : -10), f.z + (f.nation === 2 ? -10 : 10), c, 14);
     }
-    // merkez anıt: 8 sütun + dikilitaş + meşaleler
-    { const m = P.monument, y = H(m.x, m.z); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, x = m.x + Math.cos(a) * m.r, z = m.z + Math.sin(a) * m.r; cyl(x, y - 1, z, 1.3, 10, 0xc8c0b0, true); box(x, y + 9, z, 3.2, 1.2, 3.2, 0xb0a898, false); }
+    // merkez anıt: orijinal taş halkası (yoksa sütun + dikilitaş)
+    if (O && O.var('obj_el_trans_stone8s') && O.var('obj_el_trans_stone5b')) { const m = P.monument; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; orj('obj_el_trans_stone8s', m.x + Math.cos(a) * m.r, m.z + Math.sin(a) * m.r, { ry: -a }); } orj('obj_el_trans_stone5b', m.x, m.z); orj('fire_a_big', m.x + 12, m.z, { solid: false }); orj('fire_a_big', m.x - 12, m.z, { solid: false }); }
+    else { const m = P.monument, y = H(m.x, m.z); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, x = m.x + Math.cos(a) * m.r, z = m.z + Math.sin(a) * m.r; cyl(x, y - 1, z, 1.3, 10, 0xc8c0b0, true); box(x, y + 9, z, 3.2, 1.2, 3.2, 0xb0a898, false); }
       addGeo(new THREE.CylinderGeometry(0.5, 2.4, 1, 4), m.x, y + 9, m.z, { sy: 18, ry: Math.PI / 4, color: 0x8a8a92 }); solids.push([m.x - 2, m.z - 2, m.x + 2, m.z + 2]); soup.push(...aabbTris(m.x - 2, y, m.z - 2, m.x + 2, y + 18, m.z + 2));
       addGeo(ICO, m.x, y + 19, m.z, { sx: 1.5, sy: 1.5, sz: 1.5, color: 0xff9a40, jit: 0 }); }
     // gözetleme kuleleri
     for (const [x, z] of P.watch) if (free(x, z, 4, { road: 6 })) tower(x, z, 7, 16, DARK, 0x555566);
+    if (O) {
+      const CAL = ['obj_co_bush02', 'obj_co_bush01', 'obj_co_bush04', 'obj_co_dumbul02y', 'obj_co_dumbul07y', 'obj_co_ip03y'].filter((a) => O.var(a));
+      for (let i = 0, k = 0; k < 900 && i < 6000 && CAL.length; i++) { const x = 30 + R() * (WORLD - 60), z = 30 + R() * (WORLD - 60); if (H(x, z) > 50 || !free(x, z, 1, { road: 3 })) continue; O.put(CAL[(R() * CAL.length) | 0], x, z, { ry: R() * 6.28, s: 0.8 + R() * 0.8, y: H(x, z) - 0.1 }); k++; }
+      const KEM = ['obj_ka_bone01_big', 'obj_ka_bone02_head', 'obj_ka_bone05', 'obj_ka_bone03'].filter((a) => O.var(a));
+      for (let i = 0, k = 0; k < 40 && i < 2000 && KEM.length; i++) { const x = 60 + R() * (WORLD - 120), z = 60 + R() * (WORLD - 120); if (nearFlatCore(x, z, 1.2) || !free(x, z, 6, { road: 6 })) continue; orj(KEM[(R() * KEM.length) | 0], x, z, { ry: R() * 6.28, solid: k % 3 === 0 }); k++; }
+      for (const rd of P.roads) for (let i = 0; i + 1 < rd.length; i++) { const [a, b] = [rd[i], rd[i + 1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = 20; t < L; t += 45) { const x = a[0] + (b[0] - a[0]) * t / L + 5, z = a[1] + (b[1] - a[1]) * t / L; if (free(x, z, 2, { road: 3 })) orj('obj_ka_01_lamp', x, z, { solid: false }); } }
+      for (const f of P.forts) { for (const k of [-1, 1]) { orj('fire_a_big', f.x + k * 12, f.z + k * 4, { solid: false }); orj(R() < 0.5 ? 'obj_el_box00' : 'obj_el_box01', f.x + k * 20, f.z - k * 18); } }
+    }
     // harabeler
     const RU = ['obj_ka_panhouse01', 'obj_ka_panhouse02', 'obj_ka_panhouse03', 'obj_el_tonghouse_02', 'obj_el_tonghouse_01', 'obj_el_tonghouse_side01', 'bat_ka_housetop01'].filter((a) => O?.var(a));
     for (let i = 0, ok = 0; ok < P.ruins && i < 400; i++) {
