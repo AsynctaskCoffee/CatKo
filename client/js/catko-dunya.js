@@ -141,6 +141,9 @@ export async function dunyaKur({ THREE, zone, world, state, Collision, base }) {
       if (!free(px, pz, 6, { road: 7 + w / 2 })) continue;
       house(px, pz, w, d, h, stucco[(R() * stucco.length) | 0], roofs[(R() * roofs.length) | 0], R() < 0.5 ? 0 : 0); hc++;
     }
+    // gerçek NPC konumlarına göre: han, demirci, dükkânlar (NPC'nin arkasında), kahramanlar heykeli
+    for (const [x, z, w, dd, h] of P.landmarks || []) if (free(x, z, 3, { road: 3, stone: false, npc: 4 })) house(x, z, w, dd, h, 0xd9c7a0, 0x8b3a2e, 0);
+    for (const [x, z] of P.statues || []) { const y = H(x, z); cyl(x, y, z, 2.2, 1.2, STONE, true); cyl(x, y + 1.2, z, 0.9, 5, 0xb8b2a4); addGeo(ICO, x, y + 6.6, z, { sx: 1.3, sy: 1.6, sz: 1.3, color: x < 817 ? KARUS : ELMO }); }
     // sokak fenerleri (yollar boyunca)
     for (const rd of P.roads.slice(0, 4)) for (let i = 0; i + 1 < rd.length; i++) { const [a, b] = [rd[i], rd[i + 1]], L = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = 8; t < L; t += 16) { const x = a[0] + (b[0] - a[0]) * t / L + 3.5, z = a[1] + (b[1] - a[1]) * t / L; if (!free(x, z, 2, { road: 2, stone: false })) continue; const y = H(x, z); cyl(x, y, z, 0.18, 4, 0x3a3a3a); addGeo(ICO, x, y + 4.3, z, { sx: 0.45, sy: 0.45, sz: 0.45, color: 0xffd070, jit: 0 }); } }
     console.info('[CatKo] Moradon: ' + hc + ' ev');
